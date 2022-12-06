@@ -4,6 +4,23 @@ import { Blog } from './classes';
 import { BlogUpdateModel } from '../models/blogs/BlogUpdateModel';
 import { Injectable } from '@nestjs/common';
 import { BlogsRepository } from './blogs.repository';
+import { IsNotEmpty, Matches, MaxLength } from 'class-validator';
+import { urlFormat } from '../constants/general/general';
+
+export class BlogCreateInput {
+  @IsNotEmpty({ message: 'This field is required!' })
+  @MaxLength(15, { message: 'Max 15 symbols!' })
+  name: string;
+
+  @IsNotEmpty({ message: 'This field is required!' })
+  @MaxLength(100, { message: 'Max 100 symbols!' })
+  @Matches(urlFormat, { message: 'Incorrect url address!' })
+  websiteUrl: string;
+
+  @IsNotEmpty({ message: 'This field is required!' })
+  @MaxLength(500, { message: 'Max 500 symbols!' })
+  description: string;
+}
 
 @Injectable()
 export class BlogsService {

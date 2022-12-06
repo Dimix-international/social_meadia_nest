@@ -8,19 +8,23 @@ import {
   Post,
   Put,
   Query,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { transformInNumber } from '../helpers/helpers';
 import { BlogsGetModel } from '../models/blogs/BlogsGetModel';
-import { BlogCreateModel } from '../models/blogs/BlogCreateModel';
 import { BlogUpdateModel } from '../models/blogs/BlogUpdateModel';
-import { BlogsService } from './blogs.service';
+import { BlogCreateInput, BlogsService } from './blogs.service';
 import { BlogsQueryRepository } from './blogs.query-repository';
+import { PostCreateForBlogInput, PostsService } from '../posts/posts.service';
+import { PostsQueryRepository } from '../posts/posts.query-repository';
+import { HTTP_STATUSES } from '../constants/general/general';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
-    // protected postsQueryRepository: PostsQueryRepository,
-    // protected postsService: PostsService,
+    protected postsQueryRepository: PostsQueryRepository,
+    protected postsService: PostsService,
     protected blogsQueryRepository: BlogsQueryRepository,
     protected blogsService: BlogsService,
   ) {}
@@ -44,41 +48,60 @@ export class BlogsController {
     );
   }
 
-  @Get()
+  @Get(':id')
   async getBlog(@Param('id') id: string) {
     const searchedBlog = await this.blogsQueryRepository.getBlogById(id);
 
     if (searchedBlog) {
       return searchedBlog;
     } else {
-      throw NotFoundException;
+      throw new NotFoundException();
     }
   }
 
   @Post()
-  async createBlog(@Body() data: BlogCreateModel) {
+  async createBlog(@Body() data: BlogCreateInput) {
     return await this.blogsService.createBlog(data);
   }
 
-  @Delete()
-  async deleteBlog(@Param('id') id: string) {
-    return await this.blogsService.deleteBlogById(id);
+  @Delete(':id')
+  async deleteBlog(@Param('id') id: string, @Res() res: Response) {
+    const isDeletedBlog = await this.blogsService.deleteBlogById(id);
+
+    if (!isDeletedBlog) {
+      throw new NotFoundException();
+    }
+
+    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
   }
 
-  @Put()
-  async updateBlog(@Param('id') id: string, @Body() data: BlogUpdateModel) {
-    return await this.blogsService.updateBlogById(id, data);
-  }
-  /*
-  async createPostForBlog(
-    req: RequestWithParamsBody<
-      BlogCreatePostBlogURIParamsModel,
-      BlogCreatePostForBlogModel
-    >,
-    res: Response<BlogWithCreatedPostViewModel>,
+  @Put(':id')
+  async updateBlog(
+    @Param('id') id: string,
+    @Body() data: BlogUpdateModel,
+    @Res() res: Response,
   ) {
-    const { blogId } = req.params;
-    const { title, content, shortDescription } = req.body;
+    const isUpdatedBlog = await this.blogsService.updateBlogById(id, data);
+
+    if (!isUpdatedBlog) {
+      throw new NotFoundException();
+    }
+
+    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+  }
+
+  @Post(':blogId/posts')
+  async createPostForBlog(
+    @Param('blogId') blogId: string,
+    @Body() data: PostCreateForBlogInput,
+  ) {
+    const blog = this.blogsQueryRepository.getBlogById(blogId);
+
+    if (!blog) {
+      throw new NotFoundException();
+    }
+
+    const { title, content, shortDescription } = data;
 
     const post = await this.postsService.createPost({
       blogId,
@@ -88,26 +111,20 @@ export class BlogsController {
     });
 
     if (!post) {
-      res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-      return;
+      throw new NotFoundException();
     }
-    res.status(HTTP_STATUSES.CREATED_201).send(post);
+    return post;
   }
 
+  @Get(':blogId/posts')
   async getPostOfBlog(
-    req: RequestWithQueryParamsAndParams<
-      BlogCreatePostBlogURIParamsModel,
-      PostsGetModel
-    >,
-    res: Response<PostsForBlogViewModel>,
+    @Param('blogId') blogId: string,
+    @Query() data: BlogsGetModel,
   ) {
-    const { blogId } = req.params;
-
     const searchBlog = await this.blogsQueryRepository.getBlogById(blogId);
 
     if (!searchBlog) {
-      res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-      return;
+      throw new NotFoundException();
     }
 
     const {
@@ -115,7 +132,7 @@ export class BlogsController {
       pageSize,
       sortBy = 'createdAt',
       sortDirection = 'desc',
-    } = req.query;
+    } = data;
 
     const posts = await this.postsQueryRepository.getPostsForBlog(
       transformInNumber(pageNumber, 1),
@@ -126,10 +143,9 @@ export class BlogsController {
     );
 
     if (!posts) {
-      res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-      return;
+      throw new NotFoundException();
     }
 
-    res.status(HTTP_STATUSES.OK_200).send(posts);
-  }*/
+    return posts;
+  }
 }
