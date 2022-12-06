@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import jwt from 'jsonwebtoken';
 import { settings } from '../settings';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const jwt = require('jsonwebtoken');
 
 @Injectable()
 export class JwtService {

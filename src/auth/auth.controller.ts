@@ -27,7 +27,7 @@ export class AuthRouterController {
   ) {}
 
   @Post('login')
-  async login(@Body() data: UserLoginModel, @Res() res: Response) {
+  async login(@Body() data: UserLoginModel) {
     const { loginOrEmail, password } = data;
 
     const user = await this.usersQueryRepository.getUserByEmailLogin(
@@ -51,7 +51,7 @@ export class AuthRouterController {
       throw new BadRequestException();
     }
 
-    return res.status(HTTP_STATUSES.OK_200).send(userInfo);
+    return userInfo;
   }
 
   @Post('registration')
