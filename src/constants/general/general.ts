@@ -2,6 +2,7 @@ export const dateTimeFormat =
   /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(([+-]\d\d:\d\d)|Z)?$/i;
 export const urlFormat =
   /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/;
+export const emailFormat = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
 export enum Roles {
   ADMIN = 'admin',

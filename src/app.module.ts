@@ -15,6 +15,13 @@ import { CommentsService } from './comments/comments.service';
 import { TestingDataController } from './testing-data/testing-data.controller';
 import { CommentsController } from './comments/comments.controller';
 import { TestingDataRepository } from './testing-data/testing-data.repository';
+import { UserService } from './users/users.service';
+import { UserController } from './users/users.controller';
+import { EmailsService } from './emails/emails.service';
+import { EmailAdapter } from './adapters/email-adapter';
+import { JwtService } from './jwt/jwt.service';
+import { AuthService } from './auth/auth.service';
+import { AuthRouterController } from './auth/auth.controller';
 
 @Module({
   imports: [],
@@ -23,6 +30,8 @@ import { TestingDataRepository } from './testing-data/testing-data.repository';
     PostsController,
     TestingDataController,
     CommentsController,
+    UserController,
+    AuthRouterController,
   ],
   providers: [
     BlogsService,
@@ -33,10 +42,15 @@ import { TestingDataRepository } from './testing-data/testing-data.repository';
     PostsQueryRepository,
     UsersRepository,
     UsersQueryRepository,
+    UserService,
     CommentsService,
     CommentsRepository,
     CommentsQueryRepository,
     TestingDataRepository,
+    EmailsService,
+    EmailAdapter,
+    JwtService,
+    AuthService,
   ],
 })
 export class AppModule {}

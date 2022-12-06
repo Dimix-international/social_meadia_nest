@@ -17,6 +17,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const responseBody: any = exception.getResponse();
 
     switch (status) {
+      case 401: {
+        console.log('UNAUTHORIZED');
+        response.sendStatus(status);
+        break;
+      }
       case 403: {
         console.log('FORBIDDEN');
         response.sendStatus(status);
@@ -28,7 +33,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
       }
       default: {
         const errorResponse = [];
-
         responseBody.message.forEach((m) => errorResponse.push(m));
         response.status(status).json({
           errorsMessages: errorResponse,
