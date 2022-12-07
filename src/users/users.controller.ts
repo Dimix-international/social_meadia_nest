@@ -50,7 +50,7 @@ export class UserController {
   }
 
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  @Delete(':id')
+  @Delete('/:id')
   async deleteUser(@Param('id') id: string) {
     const searchUser = await this.usersQueryRepository.getUserById(id);
 

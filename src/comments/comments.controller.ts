@@ -24,7 +24,7 @@ export class CommentsController {
     protected commentsService: CommentsService,
   ) {}
 
-  @Get(':id')
+  @Get('/:id')
   async getComments(@Param('id') id: string) {
     const comment = await this.commentsQueryRepository.getCommentById(id);
 
@@ -35,7 +35,7 @@ export class CommentsController {
   }
 
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  @Delete(':id')
+  @Delete('/:id')
   async deleteComment(@Param('id') commentId: string, @Req() req: Request) {
     const comment = await this.commentsQueryRepository.getCommentById(
       commentId,
@@ -67,7 +67,7 @@ export class CommentsController {
   }
 
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  @Put(':id')
+  @Put('/:id')
   async updateComment(
     @Param('id') commentId: string,
     @Body() data: CommentCreateInput,

@@ -49,7 +49,7 @@ export class BlogsController {
     );
   }
 
-  @Get(':id')
+  @Get('/:id')
   async getBlog(@Param('id') id: string) {
     const searchedBlog = await this.blogsQueryRepository.getBlogById(id);
 
@@ -67,7 +67,7 @@ export class BlogsController {
 
   @UseGuards(AuthAdminGuard)
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  @Delete(':id')
+  @Delete('/:id')
   async deleteBlog(@Param('id') id: string) {
     const isDeletedBlog = await this.blogsService.deleteBlogById(id);
 
@@ -78,7 +78,7 @@ export class BlogsController {
 
   @UseGuards(AuthAdminGuard)
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  @Put(':id')
+  @Put('/:id')
   async updateBlog(@Param('id') id: string, @Body() data: BlogUpdateModel) {
     const isUpdatedBlog = await this.blogsService.updateBlogById(id, data);
 
@@ -88,7 +88,7 @@ export class BlogsController {
   }
 
   @UseGuards(AuthAdminGuard)
-  @Post(':blogId/posts')
+  @Post('/:blogId/posts')
   async createPostForBlog(
     @Param('blogId') blogId: string,
     @Body() data: PostCreateForBlogInput,
@@ -114,7 +114,7 @@ export class BlogsController {
     return post;
   }
 
-  @Get(':blogId/posts')
+  @Get('/:blogId/posts')
   async getPostOfBlog(
     @Param('blogId') blogId: string,
     @Query() data: BlogsGetModel,

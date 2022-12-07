@@ -25,7 +25,7 @@ export class AuthRouterController {
     protected emailsService: EmailsService,
   ) {}
 
-  @Post('login')
+  @Post('/login')
   async login(@Body() data: UserLoginModel) {
     const { loginOrEmail, password } = data;
 
@@ -54,7 +54,7 @@ export class AuthRouterController {
   }
 
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  @Post('registration')
+  @Post('/registration')
   async registration(@Body() data: UserCreateInput) {
     const { login, password, email } = data;
 
@@ -106,7 +106,7 @@ export class AuthRouterController {
   }
 
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  @Post('registration-confirmation')
+  @Post('/registration-confirmation')
   async activation(@Body('code') code: string) {
     const user = await this.usersQueryRepository.getUserByActivatedCode(code);
 
@@ -132,7 +132,7 @@ export class AuthRouterController {
   }
 
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  @Post('registration-email-resending')
+  @Post('/registration-email-resending')
   async resendingEmailRegistration(@Body() data: UserResendingInput) {
     const { email } = data;
 

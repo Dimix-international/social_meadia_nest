@@ -53,7 +53,7 @@ export class PostsController {
     );
   }
 
-  @Get(':id')
+  @Get('/:id')
   async getPost(@Param('id') id: string) {
     const searchPost = await this.postsQueryRepository.getPostById(id);
 
@@ -77,7 +77,7 @@ export class PostsController {
 
   @UseGuards(AuthAdminGuard)
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  @Delete(':id')
+  @Delete('/:id')
   async deletePost(@Param('id') id: string) {
     const isDeletedPost = await this.postsService.deletePostById(id);
 
@@ -88,7 +88,7 @@ export class PostsController {
 
   @UseGuards(AuthAdminGuard)
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  @Put(':id')
+  @Put('/:id')
   async updatePost(@Param('id') id: string, @Body() data: PostCreateInput) {
     const isUpdatedPost = await this.postsService.updatePostById(id, data);
 
@@ -97,7 +97,7 @@ export class PostsController {
     }
   }
 
-  @Post(':id/comments')
+  @Post('/:id/comments')
   async createCommentForPost(
     @Param('id') postId: string,
     @Body() data: CommentCreateInput,
@@ -119,7 +119,7 @@ export class PostsController {
     );
   }
 
-  @Get(':id/comments')
+  @Get('/:id/comments')
   async getCommentsForPost(
     @Param('id') postId: string,
     @Query() data: CommentsGetModel,
