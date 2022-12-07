@@ -2,9 +2,9 @@ import { User } from './classes';
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { v4 as uuidv4 } from 'uuid';
-import { HASH_SALT_ROUNDS } from '../constants/general/general';
+import { emailFormat, HASH_SALT_ROUNDS } from '../constants/general/general';
 import bcrypt from 'bcrypt';
-import { IsNotEmpty, MaxLength, MinLength, IsEmail } from 'class-validator';
+import { IsNotEmpty, MaxLength, MinLength, Matches } from 'class-validator';
 
 export class UserCreateInput {
   @IsNotEmpty({ message: 'This field is required!' })
@@ -13,18 +13,18 @@ export class UserCreateInput {
   login: string;
 
   @IsNotEmpty({ message: 'This field is required!' })
-  @MinLength(3, { message: 'Min 6 symbols!' })
+  @MinLength(6, { message: 'Min 6 symbols!' })
   @MaxLength(20, { message: 'Max 20 symbols!' })
   password: string;
 
   @IsNotEmpty({ message: 'This field is required!' })
-  @IsEmail({ message: 'Incorrect email format!' })
+  @Matches(emailFormat, { message: 'Incorrect email format!' })
   email: string;
 }
 
 export class UserResendingInput {
   @IsNotEmpty({ message: 'This field is required!' })
-  @IsEmail({ message: 'Incorrect email format!' })
+  @Matches(emailFormat, { message: 'Incorrect email format!' })
   email: string;
 }
 
