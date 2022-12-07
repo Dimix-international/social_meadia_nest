@@ -1,5 +1,7 @@
-import nodemailer from 'nodemailer';
 import { Injectable } from '@nestjs/common';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const nodemailer = require('nodemailer');
 
 @Injectable()
 export class EmailAdapter {

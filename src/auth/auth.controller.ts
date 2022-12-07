@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   HttpCode,
+  NotFoundException,
   Post,
 } from '@nestjs/common';
 import { UsersQueryRepository } from '../users/users.query-repository';
@@ -91,7 +92,7 @@ export class AuthRouterController {
     );
 
     if (!createdUser) {
-      throw new BadRequestException();
+      throw new NotFoundException();
     }
 
     try {
@@ -102,15 +103,16 @@ export class AuthRouterController {
       await this.userService.updateCountSendEmails(createdUser.id);
     } catch {
       await this.userService.deleteUserById(createdUser.id);
-      throw new BadRequestException();
+      throw new NotFoundException();
     }
   }
 
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Post('/registration-confirmation')
   async activation(@Body('code') code: string) {
+    console.log('code', code);
     const user = await this.usersQueryRepository.getUserByActivatedCode(code);
-
+    console.log('user', user);
     if (!user) {
       throw new BadRequestException({
         field: 'code',
@@ -125,9 +127,9 @@ export class AuthRouterController {
       });
     }
 
-    const isActivatedUser = await this.userService.activateUser(user.id);
+    const isWasActivatedUser = await this.userService.activateUser(user.id);
 
-    if (!isActivatedUser) {
+    if (!isWasActivatedUser) {
       throw new BadRequestException({
         field: 'code',
         message: 'User was not activated!',
