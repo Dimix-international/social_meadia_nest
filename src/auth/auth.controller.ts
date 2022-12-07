@@ -26,6 +26,7 @@ export class AuthRouterController {
   ) {}
 
   @Post('/login')
+  @HttpCode(HTTP_STATUSES.OK_200)
   async login(@Body() data: UserLoginModel) {
     const { loginOrEmail, password } = data;
 
@@ -127,7 +128,10 @@ export class AuthRouterController {
     const isActivatedUser = await this.userService.activateUser(user.id);
 
     if (!isActivatedUser) {
-      throw new BadRequestException();
+      throw new BadRequestException({
+        field: 'code',
+        message: 'User was not activated!',
+      });
     }
   }
 
@@ -162,14 +166,20 @@ export class AuthRouterController {
     const code = await this.userService.createNewActivatedCode(user.id);
 
     if (!code) {
-      throw new BadRequestException();
+      throw new BadRequestException({
+        field: 'code',
+        message: 'Something error!',
+      });
     }
 
     try {
       await this.emailsService.sendEmailConfirmationRegistration(email, code);
       await this.userService.updateCountSendEmails(user.id);
     } catch {
-      throw new BadRequestException();
+      throw new BadRequestException({
+        field: 'code',
+        message: 'Something error!',
+      });
     }
   }
 }
