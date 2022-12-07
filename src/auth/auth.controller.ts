@@ -103,37 +103,46 @@ export class AuthRouterController {
       await this.userService.updateCountSendEmails(createdUser.id);
     } catch {
       await this.userService.deleteUserById(createdUser.id);
-      throw new NotFoundException();
+      throw new BadRequestException([
+        {
+          field: 'code',
+          message: 'Email was not sent!',
+        },
+      ]);
     }
   }
 
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Post('/registration-confirmation')
   async activation(@Body('code') code: string) {
-    console.log('code', code);
     const user = await this.usersQueryRepository.getUserByActivatedCode(code);
-    console.log('user', user);
     if (!user) {
-      throw new BadRequestException({
-        field: 'code',
-        message: 'User not found!',
-      });
+      throw new BadRequestException([
+        {
+          field: 'code',
+          message: 'User not found!',
+        },
+      ]);
     }
-
+    console.log('user', user);
     if (user.isActivated) {
-      throw new BadRequestException({
-        field: 'code',
-        message: 'User was activated!',
-      });
+      throw new BadRequestException([
+        {
+          field: 'code',
+          message: 'User was activated!',
+        },
+      ]);
     }
 
     const isWasActivatedUser = await this.userService.activateUser(user.id);
 
     if (!isWasActivatedUser) {
-      throw new BadRequestException({
-        field: 'code',
-        message: 'User was not activated!',
-      });
+      throw new BadRequestException([
+        {
+          field: 'code',
+          message: 'User was not activated!',
+        },
+      ]);
     }
   }
 
@@ -145,43 +154,53 @@ export class AuthRouterController {
     const user = await this.usersQueryRepository.getUserByEmailLogin(email);
 
     if (!user) {
-      throw new BadRequestException({
-        field: 'code',
-        message: 'User not found!',
-      });
+      throw new BadRequestException([
+        {
+          field: 'code',
+          message: 'User not found!',
+        },
+      ]);
     }
 
     if (user.isActivated) {
-      throw new BadRequestException({
-        field: 'code',
-        message: 'User was activated!',
-      });
+      throw new BadRequestException([
+        {
+          field: 'code',
+          message: 'User was activated!',
+        },
+      ]);
     }
 
     if (user.countSendEmailsActivated > 10) {
-      throw new BadRequestException({
-        field: 'code',
-        message: 'Check correctness your email address!',
-      });
+      throw new BadRequestException([
+        {
+          field: 'code',
+          message: 'Check correctness your email address!',
+        },
+      ]);
     }
 
     const code = await this.userService.createNewActivatedCode(user.id);
 
     if (!code) {
-      throw new BadRequestException({
-        field: 'code',
-        message: 'Something error!',
-      });
+      throw new BadRequestException([
+        {
+          field: 'code',
+          message: 'Something error!',
+        },
+      ]);
     }
 
     try {
       await this.emailsService.sendEmailConfirmationRegistration(email, code);
       await this.userService.updateCountSendEmails(user.id);
     } catch {
-      throw new BadRequestException({
-        field: 'code',
-        message: 'Something error!',
-      });
+      throw new BadRequestException([
+        {
+          field: 'code',
+          message: 'Something error!',
+        },
+      ]);
     }
   }
 }
