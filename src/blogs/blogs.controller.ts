@@ -3,14 +3,14 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Post,
   Put,
   Query,
-  Res,
+  UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
 import { transformInNumber } from '../helpers/helpers';
 import { BlogsGetModel } from '../models/blogs/BlogsGetModel';
 import { BlogUpdateModel } from '../models/blogs/BlogUpdateModel';
@@ -19,6 +19,7 @@ import { BlogsQueryRepository } from './blogs.query-repository';
 import { PostCreateForBlogInput, PostsService } from '../posts/posts.service';
 import { PostsQueryRepository } from '../posts/posts.query-repository';
 import { HTTP_STATUSES } from '../constants/general/general';
+import { AuthAdminGuard } from '../auth-admin.guard';
 
 @Controller('blogs')
 export class BlogsController {
@@ -52,44 +53,41 @@ export class BlogsController {
   async getBlog(@Param('id') id: string) {
     const searchedBlog = await this.blogsQueryRepository.getBlogById(id);
 
-    if (searchedBlog) {
-      return searchedBlog;
-    } else {
+    if (!searchedBlog) {
       throw new NotFoundException();
     }
+    return searchedBlog;
   }
 
+  @UseGuards(AuthAdminGuard)
   @Post()
   async createBlog(@Body() data: BlogCreateInput) {
     return await this.blogsService.createBlog(data);
   }
 
+  @UseGuards(AuthAdminGuard)
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Delete(':id')
-  async deleteBlog(@Param('id') id: string, @Res() res: Response) {
+  async deleteBlog(@Param('id') id: string) {
     const isDeletedBlog = await this.blogsService.deleteBlogById(id);
 
     if (!isDeletedBlog) {
       throw new NotFoundException();
     }
-
-    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
   }
 
+  @UseGuards(AuthAdminGuard)
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Put(':id')
-  async updateBlog(
-    @Param('id') id: string,
-    @Body() data: BlogUpdateModel,
-    @Res() res: Response,
-  ) {
+  async updateBlog(@Param('id') id: string, @Body() data: BlogUpdateModel) {
     const isUpdatedBlog = await this.blogsService.updateBlogById(id, data);
 
     if (!isUpdatedBlog) {
       throw new NotFoundException();
     }
-
-    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
   }
 
+  @UseGuards(AuthAdminGuard)
   @Post(':blogId/posts')
   async createPostForBlog(
     @Param('blogId') blogId: string,

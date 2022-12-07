@@ -4,13 +4,13 @@ import {
   Delete,
   ForbiddenException,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Put,
   Req,
-  Res,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { UsersQueryRepository } from '../users/users.query-repository';
 import { CommentsQueryRepository } from './comments.query-repository';
 import { HTTP_STATUSES } from '../constants/general/general';
@@ -34,12 +34,9 @@ export class CommentsController {
     return comment;
   }
 
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Delete(':id')
-  async deleteComment(
-    @Param('id') commentId: string,
-    @Req() req: Request,
-    @Res() res: Response,
-  ) {
+  async deleteComment(@Param('id') commentId: string, @Req() req: Request) {
     const comment = await this.commentsQueryRepository.getCommentById(
       commentId,
     );
@@ -67,16 +64,14 @@ export class CommentsController {
     if (!isDeletedComment) {
       throw new NotFoundException();
     }
-
-    res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
   }
 
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Put(':id')
   async updateComment(
     @Param('id') commentId: string,
     @Body() data: CommentCreateInput,
     @Req() req: Request,
-    @Res() res: Response,
   ) {
     const comment = await this.commentsQueryRepository.getCommentById(
       commentId,
@@ -106,7 +101,5 @@ export class CommentsController {
     if (!isUpdatedComment) {
       throw new NotFoundException();
     }
-
-    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
   }
 }

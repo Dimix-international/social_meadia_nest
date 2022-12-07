@@ -1,5 +1,4 @@
-import { Controller, Delete, Res } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Delete, HttpCode } from '@nestjs/common';
 import { TestingDataRepository } from './testing-data.repository';
 import { HTTP_STATUSES } from '../constants/general/general';
 
@@ -7,9 +6,9 @@ import { HTTP_STATUSES } from '../constants/general/general';
 export class TestingDataController {
   constructor(protected testingDataRepository: TestingDataRepository) {}
 
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Delete()
-  async deleteAllData(@Res() res: Response) {
+  async deleteAllData() {
     await this.testingDataRepository.deleteAllData();
-    res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
   }
 }

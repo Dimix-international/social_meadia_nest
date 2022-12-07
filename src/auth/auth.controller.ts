@@ -2,8 +2,8 @@ import {
   BadRequestException,
   Body,
   Controller,
+  HttpCode,
   Post,
-  Res,
 } from '@nestjs/common';
 import { UsersQueryRepository } from '../users/users.query-repository';
 import {
@@ -14,7 +14,6 @@ import {
 import { EmailsService } from '../emails/emails.service';
 import { AuthService } from './auth.service';
 import { UserLoginModel } from '../models/auth/UserLoginModel';
-import { Response } from 'express';
 import { HTTP_STATUSES } from '../constants/general/general';
 
 @Controller('auth')
@@ -54,8 +53,9 @@ export class AuthRouterController {
     return userInfo;
   }
 
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Post('registration')
-  async registration(@Body() data: UserCreateInput, @Res() res: Response) {
+  async registration(@Body() data: UserCreateInput) {
     const { login, password, email } = data;
 
     const [isExistEmail, isExistLogin] = await Promise.all([
@@ -99,15 +99,15 @@ export class AuthRouterController {
         createdUser.activationCode,
       );
       await this.userService.updateCountSendEmails(createdUser.id);
-      return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
     } catch {
       await this.userService.deleteUserById(createdUser.id);
       throw new BadRequestException();
     }
   }
 
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Post('registration-confirmation')
-  async activation(@Body('code') code: string, @Res() res: Response) {
+  async activation(@Body('code') code: string) {
     const user = await this.usersQueryRepository.getUserByActivatedCode(code);
 
     if (!user) {
@@ -129,14 +129,11 @@ export class AuthRouterController {
     if (!isActivatedUser) {
       throw new BadRequestException();
     }
-    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
   }
 
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Post('registration-email-resending')
-  async resendingEmailRegistration(
-    @Body() data: UserResendingInput,
-    @Res() res: Response,
-  ) {
+  async resendingEmailRegistration(@Body() data: UserResendingInput) {
     const { email } = data;
 
     const user = await this.usersQueryRepository.getUserByEmailLogin(email);
@@ -171,7 +168,6 @@ export class AuthRouterController {
     try {
       await this.emailsService.sendEmailConfirmationRegistration(email, code);
       await this.userService.updateCountSendEmails(user.id);
-      return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
     } catch {
       throw new BadRequestException();
     }

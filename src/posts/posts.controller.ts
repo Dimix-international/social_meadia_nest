@@ -4,26 +4,35 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Post,
   Put,
   Query,
-  Res,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request } from 'express';
 import { PostsGetModel } from 'src/models/posts/PostsGetModel';
 import { transformInNumber } from '../helpers/helpers';
 import { PostsQueryRepository } from './posts.query-repository';
 import { PostCreateInput, PostsService } from './posts.service';
 import { HTTP_STATUSES } from '../constants/general/general';
+import { CommentsQueryRepository } from '../comments/comments.query-repository';
+import {
+  CommentCreateInput,
+  CommentsService,
+} from '../comments/comments.service';
+import { AuthAdminGuard } from '../auth-admin.guard';
+import { CommentsGetModel } from '../models/comments/CommentsGetModel';
 
 @Controller('posts')
 export class PostsController {
   constructor(
     protected postsQueryRepository: PostsQueryRepository,
-    //  @inject(CommentsQueryRepository) protected commentsQueryRepository: CommentsQueryRepository,
-    //  @inject(CommentsService) protected commentsService: CommentsService,
+    protected commentsQueryRepository: CommentsQueryRepository,
+    protected commentsService: CommentsService,
     protected postsService: PostsService,
   ) {}
 
@@ -54,6 +63,7 @@ export class PostsController {
     return searchPost;
   }
 
+  @UseGuards(AuthAdminGuard)
   @Post()
   async createPost(@Body() data: PostCreateInput) {
     const createdPost = await this.postsService.createPost(data);
@@ -65,80 +75,74 @@ export class PostsController {
     return createdPost;
   }
 
+  @UseGuards(AuthAdminGuard)
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Delete(':id')
-  async deletePost(@Param('id') id: string, @Res() res: Response) {
+  async deletePost(@Param('id') id: string) {
     const isDeletedPost = await this.postsService.deletePostById(id);
 
     if (!isDeletedPost) {
       throw new NotFoundException();
     }
-
-    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
   }
 
+  @UseGuards(AuthAdminGuard)
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Put(':id')
-  async updatePost(
-    @Param('id') id: string,
-    @Body() data: PostCreateInput,
-    @Res() res: Response,
-  ) {
+  async updatePost(@Param('id') id: string, @Body() data: PostCreateInput) {
     const isUpdatedPost = await this.postsService.updatePostById(id, data);
 
     if (!isUpdatedPost) {
       throw new NotFoundException();
     }
-
-    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
   }
 
-  /*  async createCommentForPost(
-    req: RequestWithParamsBody<PostsURIParamsModel, PostsCreateComment>,
-    res: Response<CommentViewModelType>,
+  @Post(':id/comments')
+  async createCommentForPost(
+    @Param('id') postId: string,
+    @Body() data: CommentCreateInput,
+    @Req() req: Request,
   ) {
-    const { id: postId } = req.params;
-    const { content } = req.body;
+    const { content } = data;
 
     const post = await this.postsQueryRepository.getPostById(postId);
     if (!post) {
-      return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+      throw new NotFoundException();
     }
 
     const { id: userId, login: userLogin } = req.user;
-    const newComment = await this.commentsService.createComment(
+    return await this.commentsService.createComment(
       content,
       userId,
       userLogin,
       postId,
     );
-    res.status(HTTP_STATUSES.CREATED_201).send(newComment);
   }
 
+  @Get(':id/comments')
   async getCommentsForPost(
-    req: RequestWithQueryParamsAndParams<PostsURIParamsModel, CommentsGetModel>,
-    res: Response<CommentsViewModel>,
+    @Param('id') postId: string,
+    @Query() data: CommentsGetModel,
   ) {
-    const { id: postId } = req.params;
     const {
       pageNumber,
       pageSize,
       sortBy = 'createdAt',
       sortDirection = 'desc',
-    } = req.query;
+    } = data;
 
     const post = await this.postsQueryRepository.getPostById(postId);
 
     if (!post) {
-      return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+      throw new NotFoundException();
     }
 
-    const comments = await this.commentsQueryRepository.getComments(
+    return await this.commentsQueryRepository.getComments(
       postId,
       transformInNumber(pageNumber, 1),
       transformInNumber(pageSize, 10),
       sortBy,
       sortDirection,
     );
-
-    res.status(HTTP_STATUSES.OK_200).send(comments);
-  }*/
+  }
 }

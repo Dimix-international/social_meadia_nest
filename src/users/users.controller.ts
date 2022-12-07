@@ -3,17 +3,16 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Post,
   Query,
-  Res,
 } from '@nestjs/common';
 import { UsersGetModel } from '../models/users/UsersGetModel';
 import { UsersQueryRepository } from './users.query-repository';
 import { UserCreateInput, UserService } from './users.service';
 import { transformInNumber } from '../helpers/helpers';
-import { Response } from 'express';
 import { HTTP_STATUSES } from '../constants/general/general';
 
 @Controller('users')
@@ -50,8 +49,9 @@ export class UserController {
     return await this.userService.createUser(login, password, email);
   }
 
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Delete(':id')
-  async deleteUser(@Param('id') id: string, @Res() res: Response) {
+  async deleteUser(@Param('id') id: string) {
     const searchUser = await this.usersQueryRepository.getUserById(id);
 
     if (!searchUser) {
@@ -63,7 +63,5 @@ export class UserController {
     if (!isDeletedPost) {
       throw new NotFoundException();
     }
-
-    res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
   }
 }
