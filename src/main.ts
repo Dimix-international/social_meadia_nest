@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { runDb } from './db';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './exception.filter';
+import { settings } from './settings';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -28,6 +29,8 @@ async function bootstrap() {
     }),
   ); //регестрируем глобальный pipe
   app.useGlobalFilters(new HttpExceptionFilter()); //подключаем фильтер
-  await app.listen(5000);
+  await app.listen(settings.PORT, () => {
+    console.log(`App started at ${settings.PORT}`);
+  });
 }
 bootstrap();
