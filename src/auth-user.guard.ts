@@ -20,6 +20,9 @@ export class AuthUserGuard implements CanActivate {
     if (!request.headers) {
       throw new UnauthorizedException();
     }
+    if (!request.cookies.refreshToken) {
+      throw new UnauthorizedException();
+    }
     const accessToken = request.headers.authorization?.split(' ')[1];
     const formAuth = request.headers.authorization?.split(' ')[0];
 

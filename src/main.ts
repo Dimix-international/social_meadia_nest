@@ -4,11 +4,13 @@ import { runDb } from './db';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './exception.filter';
 import { settings } from './settings';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   await runDb();
   app.enableCors(); //убираем cors
+  app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true, //делай трансофрацию по типам

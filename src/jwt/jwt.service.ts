@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { settings } from '../settings';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const jwt = require('jsonwebtoken');
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class JwtService {
@@ -9,11 +8,15 @@ export class JwtService {
     const accessToken = jwt.sign(
       { userid: payload.id },
       settings.JWT_SECRET_ACCESS,
-      { expiresIn: '30m' },
+      { expiresIn: '10' },
     );
-    const refreshToken = jwt.sign(payload, settings.JWT_SECRET_REFRESH, {
-      expiresIn: '30d',
-    });
+    const refreshToken = jwt.sign(
+      { userid: payload.id },
+      settings.JWT_SECRET_REFRESH,
+      {
+        expiresIn: '20',
+      },
+    );
     return { accessToken, refreshToken };
   }
   async getUserIdByToken(accessToken: string) {
@@ -22,6 +25,14 @@ export class JwtService {
         accessToken,
         settings.JWT_SECRET_ACCESS,
       );
+      return result.userid as string;
+    } catch (e) {
+      return null;
+    }
+  }
+  async validateRefreshToken(token: string) {
+    try {
+      const result: any = jwt.verify(token, settings.JWT_SECRET_REFRESH);
       return result.userid as string;
     } catch (e) {
       return null;

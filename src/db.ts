@@ -8,6 +8,7 @@ const db = client.db('social-info'); //имя db
 export const BlogsCollection = db.collection<BlogType>('blogs');
 export const PostsCollection = db.collection<PostType>('posts');
 export const UsersCollection = db.collection<UserType>('users');
+export const AuthCollection = db.collection<AuthType>('auth');
 export const CommentsCollection = db.collection<CommentType>('comments');
 
 export async function runDb() {
@@ -20,6 +21,11 @@ export async function runDb() {
     await client.close();
   }
 }
+
+type AuthType = {
+  userId: string;
+  token: string;
+};
 
 type BlogType = {
   id: string;

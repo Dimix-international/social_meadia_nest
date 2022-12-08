@@ -1,11 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '../jwt/jwt.service';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const bcrypt = require('bcrypt');
+import * as bcrypt from 'bcrypt';
+import { AuthRepository } from './auth.repository';
+import { AuthQueryRepository } from './auth.query-repository';
 
 @Injectable()
 export class AuthService {
-  constructor(protected jwtService: JwtService) {}
+  constructor(
+    protected jwtService: JwtService,
+    protected authRepository: AuthRepository,
+    protected authQueryRepository: AuthQueryRepository,
+  ) {}
 
   async checkCredentials(
     clientPassword: string,
@@ -17,15 +22,35 @@ export class AuthService {
       userHashPassword,
     );
     if (isRightPassword) {
-      const { accessToken } = await this.jwtService.createJWT(payload);
-      return { accessToken };
+      return await this.jwtService.createJWT(payload);
     }
     return null;
+  }
+
+  async logout(refreshToken: string): Promise<boolean> {
+    const { deletedCount } = await this.authRepository.removeToken(
+      refreshToken,
+    );
+
+    return !!deletedCount;
+  }
+
+  async saveToken(userId: string, token: string): Promise<boolean> {
+    const userInfo = await this.authQueryRepository.getUser(userId);
+
+    if (userInfo) {
+      const { matchedCount } = await this.authRepository.updateToken(token);
+      return !!matchedCount;
+    } else {
+      await this.authRepository.saveToken(userId, token);
+      return true;
+    }
   }
 }
 
 type CheckCredentialsType = {
   accessToken: string;
+  refreshToken: string;
 };
 
 type UserPayloadType = {

@@ -4,9 +4,7 @@ import { UsersRepository } from './users.repository';
 import { v4 as uuidv4 } from 'uuid';
 import { emailFormat, HASH_SALT_ROUNDS } from '../constants/general/general';
 import { IsNotEmpty, MaxLength, MinLength, Matches } from 'class-validator';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const bcrypt = require('bcrypt');
+import * as bcrypt from 'bcrypt';
 
 export class UserCreateInput {
   @IsNotEmpty({ message: 'This field is required!' })

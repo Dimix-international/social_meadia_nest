@@ -22,6 +22,8 @@ import { EmailAdapter } from './adapters/email-adapter';
 import { JwtService } from './jwt/jwt.service';
 import { AuthService } from './auth/auth.service';
 import { AuthRouterController } from './auth/auth.controller';
+import { AuthRepository } from './auth/auth.repository';
+import { AuthQueryRepository } from './auth/auth.query-repository';
 
 @Module({
   imports: [],
@@ -51,6 +53,8 @@ import { AuthRouterController } from './auth/auth.controller';
     EmailAdapter,
     JwtService,
     AuthService,
+    AuthRepository,
+    AuthQueryRepository,
   ],
 })
 export class AppModule {}
