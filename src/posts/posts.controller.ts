@@ -26,6 +26,7 @@ import {
 } from '../comments/comments.service';
 import { AuthAdminGuard } from '../auth-admin.guard';
 import { CommentsGetModel } from '../models/comments/CommentsGetModel';
+import { AuthUserGuard } from '../auth-user.guard';
 
 @Controller('posts')
 export class PostsController {
@@ -97,6 +98,7 @@ export class PostsController {
     }
   }
 
+  @UseGuards(AuthUserGuard)
   @Post('/:id/comments')
   async createCommentForPost(
     @Param('id') postId: string,
@@ -106,6 +108,7 @@ export class PostsController {
     const { content } = data;
 
     const post = await this.postsQueryRepository.getPostById(postId);
+
     if (!post) {
       throw new NotFoundException();
     }

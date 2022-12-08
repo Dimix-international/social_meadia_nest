@@ -9,12 +9,14 @@ import {
   Param,
   Put,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { UsersQueryRepository } from '../users/users.query-repository';
 import { CommentsQueryRepository } from './comments.query-repository';
 import { HTTP_STATUSES } from '../constants/general/general';
 import { CommentCreateInput, CommentsService } from './comments.service';
+import { AuthUserGuard } from '../auth-user.guard';
 
 @Controller('comments')
 export class CommentsController {
@@ -34,6 +36,7 @@ export class CommentsController {
     return comment;
   }
 
+  @UseGuards(AuthUserGuard)
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Delete('/:id')
   async deleteComment(@Param('id') commentId: string, @Req() req: Request) {
@@ -66,6 +69,7 @@ export class CommentsController {
     }
   }
 
+  @UseGuards(AuthUserGuard)
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Put('/:id')
   async updateComment(
