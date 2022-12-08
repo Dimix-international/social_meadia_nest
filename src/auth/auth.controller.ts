@@ -156,8 +156,8 @@ export class AuthRouterController {
     if (!user) {
       throw new BadRequestException([
         {
-          field: 'code',
-          message: 'User not found!',
+          field: 'email',
+          message: 'Email not found!',
         },
       ]);
     }
@@ -165,8 +165,8 @@ export class AuthRouterController {
     if (user.isActivated) {
       throw new BadRequestException([
         {
-          field: 'code',
-          message: 'User was activated!',
+          field: 'email',
+          message: 'Email was activated!',
         },
       ]);
     }
@@ -174,7 +174,7 @@ export class AuthRouterController {
     if (user.countSendEmailsActivated > 10) {
       throw new BadRequestException([
         {
-          field: 'code',
+          field: 'email',
           message: 'Check correctness your email address!',
         },
       ]);
