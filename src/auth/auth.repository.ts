@@ -7,16 +7,11 @@ export class AuthRepository {
     return await AuthCollection.insertOne({ userId, token });
   }
 
-  async updateToken(token: string) {
-    return await AuthCollection.updateOne(
-      { token },
-      {
-        $set: { token },
-      },
-    );
+  async updateToken(userId: string, token: string) {
+    return await AuthCollection.updateOne({ userId }, { $set: { token } });
   }
 
-  async removeToken(token: string) {
-    return await AuthCollection.deleteOne({ token });
+  async removeToken(userId: string) {
+    return await AuthCollection.deleteOne({ userId });
   }
 }

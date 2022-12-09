@@ -27,19 +27,19 @@ export class AuthService {
     return null;
   }
 
-  async logout(refreshToken: string): Promise<boolean> {
-    const { deletedCount } = await this.authRepository.removeToken(
-      refreshToken,
-    );
+  async logout(userId: string): Promise<boolean> {
+    const { deletedCount } = await this.authRepository.removeToken(userId);
 
     return !!deletedCount;
   }
 
   async saveToken(userId: string, token: string): Promise<boolean> {
     const userInfo = await this.authQueryRepository.getUser(userId);
-
     if (userInfo) {
-      const { matchedCount } = await this.authRepository.updateToken(token);
+      const { matchedCount } = await this.authRepository.updateToken(
+        userId,
+        token,
+      );
       return !!matchedCount;
     } else {
       await this.authRepository.saveToken(userId, token);

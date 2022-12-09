@@ -47,20 +47,31 @@ export class AuthRouterController {
     );
 
     if (!user) {
-      throw new BadRequestException({
-        field: 'loginOrEmail',
-        message: 'User not found!',
-      });
+      throw new BadRequestException([
+        {
+          field: 'loginOrEmail',
+          message: 'User not found!',
+        },
+      ]);
     }
     const { id } = user;
     const { accessToken, refreshToken } =
       await this.authService.checkCredentials(password, user.password, { id });
 
     if (!accessToken || !refreshToken) {
-      throw new BadRequestException();
+      throw new UnauthorizedException();
     }
 
-    await this.authService.saveToken(user.id, refreshToken);
+    const isSaved = await this.authService.saveToken(id, refreshToken);
+
+    if (!isSaved) {
+      throw new BadRequestException([
+        {
+          field: 'loginOrEmail',
+          message: 'User not found!',
+        },
+      ]);
+    }
 
     res.cookie('refreshToken', refreshToken, {
       maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -80,15 +91,13 @@ export class AuthRouterController {
       throw new UnauthorizedException();
     }
 
-    const isCorrectToken = await this.authQueryRepository.getUserIdByToken(
-      refreshToken,
-    );
+    const userId = await this.jwtService.validateRefreshToken(refreshToken);
 
-    if (!isCorrectToken) {
+    if (!userId) {
       throw new UnauthorizedException();
     }
 
-    await this.authService.logout(refreshToken);
+    await this.authService.logout(userId);
     res.clearCookie('refreshToken');
   }
 
@@ -271,9 +280,11 @@ export class AuthRouterController {
   async authMe(@Req() req: Request) {
     const { refreshToken } = req.cookies;
 
-    const userId = await this.authQueryRepository.getUserIdByToken(
-      refreshToken,
-    );
+    const userId = await this.jwtService.validateRefreshToken(refreshToken);
+
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
 
     const { email, login } = await this.usersQueryRepository.getUserById(
       userId,
