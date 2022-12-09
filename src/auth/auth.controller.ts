@@ -6,7 +6,6 @@ import {
   HttpCode,
   NotFoundException,
   Post,
-  Req,
   Res,
   UnauthorizedException,
   UseGuards,
@@ -17,13 +16,14 @@ import {
   UserResendingInput,
   UserService,
 } from '../users/users.service';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { EmailsService } from '../emails/emails.service';
 import { AuthService } from './auth.service';
 import { UserLoginModel } from '../models/auth/UserLoginModel';
 import { HTTP_STATUSES } from '../constants/general/general';
 import { JwtService } from '../jwt/jwt.service';
 import { AuthUserGuard } from '../auth-user.guard';
+import { Cookies } from '../cookies.decorator';
 
 @Controller('auth')
 export class AuthRouterController {
@@ -82,12 +82,12 @@ export class AuthRouterController {
     return { accessToken };
   }
 
-  @UseGuards(AuthUserGuard)
   @Post('/logout')
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const { refreshToken } = req.cookies || {};
-
+  async logout(
+    @Cookies('refreshToken') refreshToken: string | undefined,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     if (!refreshToken) {
       throw new UnauthorizedException();
     }
@@ -102,15 +102,12 @@ export class AuthRouterController {
     res.clearCookie('refreshToken');
   }
 
-  @UseGuards(AuthUserGuard)
   @Post('/refresh-token')
   @HttpCode(HTTP_STATUSES.OK_200)
   async refreshToken(
-    @Req() req: Request,
+    @Cookies('refreshToken') refreshToken: string | undefined,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { refreshToken } = req.cookies;
-
     if (!refreshToken) {
       throw new UnauthorizedException();
     }
@@ -289,8 +286,10 @@ export class AuthRouterController {
 
   @UseGuards(AuthUserGuard)
   @Get('/me')
-  async authMe(@Req() req: Request) {
-    const { refreshToken } = req.cookies;
+  async authMe(@Cookies('refreshToken') refreshToken: string | undefined) {
+    if (!refreshToken) {
+      throw new UnauthorizedException();
+    }
 
     const userId = await this.jwtService.validateRefreshToken(refreshToken);
 

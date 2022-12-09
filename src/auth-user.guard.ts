@@ -17,12 +17,11 @@ export class AuthUserGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
+
     if (!request.headers) {
       throw new UnauthorizedException();
     }
-    if (!request.cookies.refreshToken) {
-      throw new UnauthorizedException();
-    }
+
     const accessToken = request.headers.authorization?.split(' ')[1];
     const formAuth = request.headers.authorization?.split(' ')[0];
 
@@ -30,7 +29,7 @@ export class AuthUserGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    const userId = await this.jwtService.getUserIdByToken(accessToken);
+    const userId = await this.jwtService.validateAccessToken(accessToken);
 
     if (!userId) {
       throw new UnauthorizedException();

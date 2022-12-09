@@ -8,18 +8,18 @@ export class JwtService {
     const accessToken = jwt.sign(
       { userid: payload.id },
       settings.JWT_SECRET_ACCESS,
-      { expiresIn: '30' },
+      { expiresIn: '10' },
     );
     const refreshToken = jwt.sign(
       { userid: payload.id },
       settings.JWT_SECRET_REFRESH,
       {
-        expiresIn: '120',
+        expiresIn: '20',
       },
     );
     return { accessToken, refreshToken };
   }
-  async getUserIdByToken(accessToken: string) {
+  async validateAccessToken(accessToken: string) {
     try {
       const result: any = await jwt.verify(
         accessToken,
