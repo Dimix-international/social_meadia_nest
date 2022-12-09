@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  AuthCollection,
   BlogsCollection,
   CommentsCollection,
   PostsCollection,
@@ -14,6 +15,7 @@ export class TestingDataRepository {
       PostsCollection.deleteMany({}),
       UsersCollection.deleteMany({}),
       CommentsCollection.deleteMany({}),
+      AuthCollection.deleteMany({}),
     ]);
   }
 }

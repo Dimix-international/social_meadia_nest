@@ -65,7 +65,7 @@ export class AuthRouterController {
     res.cookie('refreshToken', refreshToken, {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
-      //  secure: true, // для https
+      secure: true, // для https
     });
 
     return accessToken;
