@@ -22,16 +22,14 @@ import { EmailsService } from '../emails/emails.service';
 import { AuthService } from './auth.service';
 import { UserLoginModel } from '../models/auth/UserLoginModel';
 import { HTTP_STATUSES } from '../constants/general/general';
-import { AuthQueryRepository } from './auth.query-repository';
-import { AuthAdminGuard } from '../auth-admin.guard';
 import { JwtService } from '../jwt/jwt.service';
+import { AuthUserGuard } from '../auth-user.guard';
 
 @Controller('auth')
 export class AuthRouterController {
   constructor(
     protected usersQueryRepository: UsersQueryRepository,
     protected authService: AuthService,
-    protected authQueryRepository: AuthQueryRepository,
     protected userService: UserService,
     protected emailsService: EmailsService,
     protected jwtService: JwtService,
@@ -39,7 +37,10 @@ export class AuthRouterController {
 
   @Post('/login')
   @HttpCode(HTTP_STATUSES.OK_200)
-  async login(@Body() data: UserLoginModel, @Res() res: Response) {
+  async login(
+    @Body() data: UserLoginModel,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { loginOrEmail, password } = data;
 
     const user = await this.usersQueryRepository.getUserByEmailLogin(
@@ -74,17 +75,16 @@ export class AuthRouterController {
     }
 
     res.cookie('refreshToken', refreshToken, {
-      maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
       secure: true, // для https
     });
 
-    return accessToken;
+    return { accessToken };
   }
 
   @Post('/logout')
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  async logout(@Req() req: Request, @Res() res: Response) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const { refreshToken } = req.cookies || {};
 
     if (!refreshToken) {
@@ -275,7 +275,7 @@ export class AuthRouterController {
     }
   }
 
-  @UseGuards(AuthAdminGuard)
+  @UseGuards(AuthUserGuard)
   @Get('/me')
   async authMe(@Req() req: Request) {
     const { refreshToken } = req.cookies;

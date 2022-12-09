@@ -20,7 +20,7 @@ export class AuthAdminGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    const token = request.headers.authorization.split(' ')[1];
+    const token = request.headers.authorization?.split(' ')[1];
     const formAuth = request.headers.authorization?.split(' ')[0];
 
     if (!token || formAuth !== 'Basic') {
