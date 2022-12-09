@@ -1,12 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as cookieParser from 'cookie-parser';
 import { runDb } from './db';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './exception.filter';
 import { settings } from './settings';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const cookieParser = require('cookieParser');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
