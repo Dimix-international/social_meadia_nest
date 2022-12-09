@@ -8,12 +8,14 @@ import {
   Param,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersGetModel } from '../models/users/UsersGetModel';
 import { UsersQueryRepository } from './users.query-repository';
 import { UserCreateInput, UserService } from './users.service';
 import { transformInNumber } from '../helpers/helpers';
 import { HTTP_STATUSES } from '../constants/general/general';
+import { AuthAdminGuard } from '../auth-admin.guard';
 
 @Controller('users')
 export class UserController {
@@ -22,6 +24,7 @@ export class UserController {
     protected userService: UserService,
   ) {}
 
+  @UseGuards(AuthAdminGuard)
   @Get()
   async getUsers(@Query() data: UsersGetModel) {
     const {
@@ -43,14 +46,26 @@ export class UserController {
     );
   }
 
+  @UseGuards(AuthAdminGuard)
   @Post()
   async createUser(@Body() data: UserCreateInput) {
     const { login, email, password } = data;
-    return await this.userService.createUser(login, password, email);
+    const { id, createdAt } = await this.userService.createUser(
+      login,
+      password,
+      email,
+    );
+    return {
+      id,
+      login,
+      email,
+      createdAt,
+    };
   }
 
-  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
+  @UseGuards(AuthAdminGuard)
   @Delete('/:id')
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   async deleteUser(@Param('id') id: string) {
     const searchUser = await this.usersQueryRepository.getUserById(id);
 
