@@ -103,7 +103,10 @@ export class AuthRouterController {
 
   @Post('/refresh-token')
   @HttpCode(HTTP_STATUSES.OK_200)
-  async refreshToken(@Req() req: Request) {
+  async refreshToken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { refreshToken } = req.cookies || {};
 
     if (!refreshToken) {
@@ -123,7 +126,14 @@ export class AuthRouterController {
 
     await this.authService.saveToken(userId, newRefreshToken);
 
-    return accessToken;
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true, // для https
+    });
+
+    return {
+      accessToken,
+    };
   }
 
   @Post('/registration')
