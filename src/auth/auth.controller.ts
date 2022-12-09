@@ -82,6 +82,7 @@ export class AuthRouterController {
     return { accessToken };
   }
 
+  @UseGuards(AuthUserGuard)
   @Post('/logout')
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
@@ -101,13 +102,14 @@ export class AuthRouterController {
     res.clearCookie('refreshToken');
   }
 
+  @UseGuards(AuthUserGuard)
   @Post('/refresh-token')
   @HttpCode(HTTP_STATUSES.OK_200)
   async refreshToken(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { refreshToken } = req.cookies || {};
+    const { refreshToken } = req.cookies;
 
     if (!refreshToken) {
       throw new UnauthorizedException();
