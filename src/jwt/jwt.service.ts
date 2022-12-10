@@ -8,13 +8,13 @@ export class JwtService {
     const accessToken = jwt.sign(
       { userid: payload.id },
       settings.JWT_SECRET_ACCESS,
-      { expiresIn: '10' },
+      { expiresIn: '10s' },
     );
     const refreshToken = jwt.sign(
       { userid: payload.id },
       settings.JWT_SECRET_REFRESH,
       {
-        expiresIn: '20',
+        expiresIn: '20s',
       },
     );
     return { accessToken, refreshToken };
