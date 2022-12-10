@@ -76,8 +76,8 @@ export class AuthRouterController {
     }
 
     res.cookie('refreshToken', refreshToken, {
-      //httpOnly: true,
-      // secure: true, // для https
+      httpOnly: true,
+      secure: true, // для https
     });
 
     return { accessToken };
@@ -127,8 +127,8 @@ export class AuthRouterController {
     await this.authService.saveToken(userId, newRefreshToken);
 
     res.cookie('refreshToken', refreshToken, {
-      // httpOnly: true,
-      // secure: true, // для https
+      httpOnly: true,
+      secure: true, // для https
     });
 
     return {
