@@ -66,16 +66,7 @@ export class AuthRouterController {
       throw new UnauthorizedException();
     }
 
-    const isSaved = await this.authService.saveToken(id, refreshToken, '');
-
-    if (!isSaved) {
-      throw new BadRequestException([
-        {
-          field: 'loginOrEmail',
-          message: 'User not found!',
-        },
-      ]);
-    }
+    await this.authService.saveToken(id, refreshToken);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -101,13 +92,13 @@ export class AuthRouterController {
       throw new UnauthorizedException();
     }
 
-    const { invalidTokens } = await this.authQueryRepository.getUser(userId);
+    const { token } = await this.authQueryRepository.getUser(userId);
 
-    if (invalidTokens.includes(refreshToken)) {
+    if (token !== refreshToken) {
       throw new UnauthorizedException();
     }
 
-    await this.authService.logout(userId, refreshToken);
+    await this.authService.logout(userId);
     res.clearCookie('refreshToken');
   }
 
@@ -127,9 +118,9 @@ export class AuthRouterController {
       throw new UnauthorizedException();
     }
 
-    const { invalidTokens } = await this.authQueryRepository.getUser(userId);
+    const { token } = await this.authQueryRepository.getUser(userId);
 
-    if (invalidTokens.includes(refreshToken)) {
+    if (token !== refreshToken) {
       throw new UnauthorizedException();
     }
 
@@ -138,16 +129,14 @@ export class AuthRouterController {
         id: userId,
       });
 
-    await this.authService.saveToken(userId, newRefreshToken, refreshToken);
+    await this.authService.updateToken(userId, newRefreshToken);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true, // для https
     });
 
-    return {
-      accessToken,
-    };
+    return { accessToken };
   }
 
   @Post('/registration')
