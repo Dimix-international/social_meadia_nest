@@ -23,8 +23,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
         break;
       }
       case 403: {
-        console.log('FORBIDDEN');
-        response.sendStatus(status);
+        const errorResponse = [];
+        responseBody.message.forEach((m) => errorResponse.push(m));
+        response.status(status).json({
+          errorsMessages: errorResponse,
+        });
         break;
       }
       case 404: {

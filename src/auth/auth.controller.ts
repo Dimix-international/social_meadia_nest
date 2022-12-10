@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   NotFoundException,
@@ -114,14 +115,30 @@ export class AuthRouterController {
 
     const userId = await this.jwtService.validateRefreshToken(refreshToken);
 
+    console.log('userId', userId);
+
     if (!userId) {
-      throw new NotFoundException();
+      throw new ForbiddenException([
+        {
+          field: 'userId',
+          message: userId,
+        },
+      ]);
     }
 
     const { token } = await this.authQueryRepository.getUser(userId);
 
     if (token !== refreshToken) {
-      throw new BadRequestException();
+      throw new ForbiddenException([
+        {
+          field: 'token',
+          message: token,
+        },
+        {
+          field: 'refreshToken',
+          message: refreshToken,
+        },
+      ]);
     }
 
     const { refreshToken: newRefreshToken, accessToken } =
