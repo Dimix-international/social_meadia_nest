@@ -17,11 +17,11 @@ export class AuthRepository {
     );
   }
 
-  async removeToken(token: string, userId: string) {
+  async removeToken(userId: string, token: string) {
     return await AuthCollection.updateOne(
       { userId },
       {
-        $set: { token: null },
+        $set: { token: '' },
         $push: { invalidTokens: token },
       },
     );

@@ -127,6 +127,12 @@ export class AuthRouterController {
       throw new UnauthorizedException();
     }
 
+    const { invalidTokens } = await this.authQueryRepository.getUser(userId);
+
+    if (invalidTokens.includes(refreshToken)) {
+      throw new UnauthorizedException();
+    }
+
     const { refreshToken: newRefreshToken, accessToken } =
       await this.jwtService.createJWT({
         id: userId,
