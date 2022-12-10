@@ -89,13 +89,13 @@ export class AuthRouterController {
     const userId = await this.jwtService.validateRefreshToken(refreshToken);
 
     if (!userId) {
-      throw new UnauthorizedException();
+      throw new NotFoundException();
     }
 
     const { token } = await this.authQueryRepository.getUser(userId);
 
     if (token !== refreshToken) {
-      throw new UnauthorizedException();
+      throw new BadRequestException();
     }
 
     await this.authService.logout(userId);
