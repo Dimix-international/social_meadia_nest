@@ -18,10 +18,12 @@ export class AuthRepository {
   }
 
   async removeToken(token: string, userId: string) {
-    await AuthCollection.updateOne(
+    return await AuthCollection.updateOne(
       { userId },
-      { $push: { invalidTokens: token } },
+      {
+        $set: { token: null },
+        $push: { invalidTokens: token },
+      },
     );
-    return await AuthCollection.deleteOne({ userId });
   }
 }

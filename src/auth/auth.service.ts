@@ -28,12 +28,12 @@ export class AuthService {
   }
 
   async logout(userId: string, oldToken: string): Promise<boolean> {
-    const { deletedCount } = await this.authRepository.removeToken(
+    const { matchedCount } = await this.authRepository.removeToken(
       userId,
       oldToken,
     );
 
-    return !!deletedCount;
+    return !!matchedCount;
   }
 
   async saveToken(
