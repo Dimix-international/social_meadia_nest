@@ -6,6 +6,7 @@ import {
   HttpCode,
   NotFoundException,
   Post,
+  Req,
   Res,
   UnauthorizedException,
   UseGuards,
@@ -16,7 +17,7 @@ import {
   UserResendingInput,
   UserService,
 } from '../users/users.service';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { EmailsService } from '../emails/emails.service';
 import { AuthService } from './auth.service';
 import { UserLoginModel } from '../models/auth/UserLoginModel';
@@ -75,8 +76,8 @@ export class AuthRouterController {
     }
 
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true, // для https
+      //httpOnly: true,
+      // secure: true, // для https
     });
 
     return { accessToken };
@@ -126,8 +127,8 @@ export class AuthRouterController {
     await this.authService.saveToken(userId, newRefreshToken);
 
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true, // для https
+      // httpOnly: true,
+      // secure: true, // для https
     });
 
     return {
@@ -204,7 +205,6 @@ export class AuthRouterController {
         },
       ]);
     }
-    console.log('user', user);
     if (user.isActivated) {
       throw new BadRequestException([
         {
@@ -286,16 +286,8 @@ export class AuthRouterController {
 
   @UseGuards(AuthUserGuard)
   @Get('/me')
-  async authMe(@Cookies('refreshToken') refreshToken: string | undefined) {
-    if (!refreshToken) {
-      throw new UnauthorizedException();
-    }
-
-    const userId = await this.jwtService.validateRefreshToken(refreshToken);
-
-    if (!userId) {
-      throw new UnauthorizedException();
-    }
+  async authMe(@Req() req: Request) {
+    const { id: userId } = req.user;
 
     const { email, login } = await this.usersQueryRepository.getUserById(
       userId,
