@@ -33,16 +33,18 @@ export class AuthService {
   }
 
   async saveToken(userId: string, token: string): Promise<boolean> {
-    await this.authRepository.saveToken(userId, token);
-    return true;
-  }
+    const user = await this.authQueryRepository.getUser(userId);
 
-  async updateToken(userId: string, token: string): Promise<boolean> {
-    const { matchedCount } = await this.authRepository.updateToken(
-      userId,
-      token,
-    );
-    return !!matchedCount;
+    if (user) {
+      await this.authRepository.saveToken(userId, token);
+      return true;
+    } else {
+      const { matchedCount } = await this.authRepository.updateToken(
+        userId,
+        token,
+      );
+      return !!matchedCount;
+    }
   }
 }
 

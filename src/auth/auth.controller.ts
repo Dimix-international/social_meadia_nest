@@ -58,6 +58,7 @@ export class AuthRouterController {
         },
       ]);
     }
+
     const { id } = user;
     const { accessToken, refreshToken } =
       await this.authService.checkCredentials(password, user.password, { id });
@@ -121,7 +122,6 @@ export class AuthRouterController {
     const { token } = await this.authQueryRepository.getUser(userId);
 
     if (token !== refreshToken) {
-      console.log('error here');
       throw new UnauthorizedException();
     }
 
@@ -130,7 +130,7 @@ export class AuthRouterController {
         id: userId,
       });
 
-    await this.authService.updateToken(userId, newRefreshToken);
+    await this.authService.saveToken(userId, newRefreshToken);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
