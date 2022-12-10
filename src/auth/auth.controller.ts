@@ -25,12 +25,14 @@ import { HTTP_STATUSES } from '../constants/general/general';
 import { JwtService } from '../jwt/jwt.service';
 import { AuthUserGuard } from '../auth-user.guard';
 import { Cookies } from '../cookies.decorator';
+import { AuthQueryRepository } from './auth.query-repository';
 
 @Controller('auth')
 export class AuthRouterController {
   constructor(
     protected usersQueryRepository: UsersQueryRepository,
     protected authService: AuthService,
+    protected authQueryRepository: AuthQueryRepository,
     protected userService: UserService,
     protected emailsService: EmailsService,
     protected jwtService: JwtService,
@@ -64,7 +66,7 @@ export class AuthRouterController {
       throw new UnauthorizedException();
     }
 
-    const isSaved = await this.authService.saveToken(id, refreshToken);
+    const isSaved = await this.authService.saveToken(id, refreshToken, '');
 
     if (!isSaved) {
       throw new BadRequestException([
@@ -99,7 +101,13 @@ export class AuthRouterController {
       throw new UnauthorizedException();
     }
 
-    await this.authService.logout(userId);
+    const { invalidTokens } = await this.authQueryRepository.getUser(userId);
+
+    if (invalidTokens.includes(refreshToken)) {
+      throw new UnauthorizedException();
+    }
+
+    await this.authService.logout(userId, refreshToken);
     res.clearCookie('refreshToken');
   }
 
@@ -124,7 +132,7 @@ export class AuthRouterController {
         id: userId,
       });
 
-    await this.authService.saveToken(userId, newRefreshToken);
+    await this.authService.saveToken(userId, newRefreshToken, refreshToken);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,

@@ -11,4 +11,5 @@ export class AuthQueryRepository {
 type GetUserType = {
   userId: string;
   token: string;
+  invalidTokens: string[];
 };
