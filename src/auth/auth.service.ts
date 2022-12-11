@@ -46,6 +46,13 @@ export class AuthService {
       return !!matchedCount;
     }
   }
+  async updateToken(userId: string, token: string): Promise<boolean> {
+    const { matchedCount } = await this.authRepository.updateToken(
+      userId,
+      token,
+    );
+    return !!matchedCount;
+  }
 }
 
 type CheckCredentialsType = {

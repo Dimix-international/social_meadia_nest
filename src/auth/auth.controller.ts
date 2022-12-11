@@ -130,7 +130,7 @@ export class AuthRouterController {
         id: userId,
       });
 
-    await this.authService.saveToken(userId, newRefreshToken);
+    await this.authService.updateToken(userId, newRefreshToken);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
