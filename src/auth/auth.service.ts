@@ -35,7 +35,7 @@ export class AuthService {
   async saveToken(userId: string, token: string): Promise<boolean> {
     const user = await this.authQueryRepository.getUser(userId);
 
-    if (user) {
+    if (!user) {
       await this.authRepository.saveToken(userId, token);
       return true;
     } else {
