@@ -102,7 +102,13 @@ export class AuthRouterController {
       throw new UnauthorizedException();
     }
 
-    const { token } = await this.authQueryRepository.getUser(userId);
+    const user = await this.authQueryRepository.getUser(userId);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    const { token } = user;
 
     if (token !== refreshToken) {
       throw new UnauthorizedException();
@@ -128,7 +134,13 @@ export class AuthRouterController {
       throw new UnauthorizedException();
     }
 
-    const { token } = await this.authQueryRepository.getUser(userId);
+    const user = await this.authQueryRepository.getUser(userId);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    const { token } = user;
 
     if (token !== refreshToken) {
       throw new UnauthorizedException();
