@@ -67,7 +67,16 @@ export class AuthRouterController {
       throw new UnauthorizedException();
     }
 
-    await this.authService.saveToken(id, refreshToken);
+    const isSavedToken = await this.authService.saveToken(id, refreshToken);
+
+    if (!isSavedToken) {
+      throw new BadRequestException([
+        {
+          field: 'loginOrEmail',
+          message: 'Something error!',
+        },
+      ]);
+    }
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -132,7 +141,7 @@ export class AuthRouterController {
 
     await this.authService.updateToken(userId, newRefreshToken);
 
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: true, // для https
     });
