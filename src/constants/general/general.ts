@@ -8,9 +8,9 @@ export enum Roles {
   ADMIN = 'admin',
 }
 
-export const EXPIRES_TIME_ACCESS_TOKEN = '9000'; //9000 or 600000
+export const EXPIRES_TIME_ACCESS_TOKEN = '9900'; //9900 or 600000
 
-export const EXPIRES_TIME_REFRESH_TOKEN = '19000'; //19000 or 2400000000
+export const EXPIRES_TIME_REFRESH_TOKEN = '19900'; //19900 or 2400000000
 
 export const HASH_SALT_ROUNDS = 7;
 

@@ -85,11 +85,11 @@ export class AuthService {
 
     const { lastActiveDate, ip: ipAddress, title } = device;
 
-    if (
-      !compareWithCurrentDate(lastActiveDate) ||
-      ip !== ipAddress ||
-      userAgent !== title
-    ) {
+    if (!compareWithCurrentDate(lastActiveDate)) {
+      throw new UnauthorizedException();
+    }
+
+    if (ip !== ipAddress || userAgent !== title) {
       throw new ForbiddenException();
     }
   }
