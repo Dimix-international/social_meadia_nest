@@ -89,14 +89,9 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    console.log('ip', ip);
-    console.log('ipAddress', ipAddress);
-    console.log('userAgent', userAgent);
-    console.log('title', title);
-
-    if (ip !== ipAddress || userAgent !== title) {
+    /*    if (ip !== ipAddress || userAgent !== title) {
       throw new ForbiddenException();
-    }
+    }*/
   }
 
   async checkCorrectToken(
