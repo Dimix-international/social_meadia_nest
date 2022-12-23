@@ -28,6 +28,8 @@ import { AuthUserGuard } from '../guards/auth-user.guard';
 import { Cookies } from '../decorators/params/cookies.decorator';
 import { UserAgent } from '../decorators/params/user-agent.decorator';
 import { SkipThrottle } from '@nestjs/throttler';
+import { compareWithCurrentDate } from '../helpers/helpers';
+import { AuthQueryRepository } from './auth.query-repository';
 
 @Controller('auth')
 export class AuthRouterController {
@@ -37,6 +39,7 @@ export class AuthRouterController {
     protected userService: UserService,
     protected emailsService: EmailsService,
     protected jwtService: JwtService,
+    protected authQueryRepository: AuthQueryRepository,
   ) {}
 
   @Post('/login')
@@ -106,9 +109,20 @@ export class AuthRouterController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const tokenInfo = await this.authService.checkCorrectToken(refreshToken);
-    await this.authService.checkCorrectDeviceInfo(tokenInfo, ip, userAgent);
 
     const { deviceId, userId } = tokenInfo;
+
+    const device = await this.authQueryRepository.getDevice(deviceId);
+
+    if (!device) {
+      throw new UnauthorizedException();
+    }
+
+    const { lastActiveDate } = device;
+
+    if (!compareWithCurrentDate(lastActiveDate)) {
+      throw new UnauthorizedException();
+    }
 
     const { refreshToken: newRefreshToken, accessToken } =
       await this.jwtService.createJWT({
