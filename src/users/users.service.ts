@@ -1,15 +1,25 @@
-import { User } from './classes';
+import { User } from './dto';
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { v4 as uuidv4 } from 'uuid';
 import { emailFormat, HASH_SALT_ROUNDS } from '../constants/general/general';
-import { IsNotEmpty, MaxLength, MinLength, Matches } from 'class-validator';
+import {
+  IsNotEmpty,
+  MaxLength,
+  MinLength,
+  Matches,
+  Validate,
+} from 'class-validator';
 import * as bcrypt from 'bcrypt';
+import { UserExistsByLoginValidator } from '../validators/UserExistsByLoginValidator';
 
 export class UserCreateInput {
   @IsNotEmpty({ message: 'This field is required!' })
   @MinLength(3, { message: 'Min 3 symbols!' })
   @MaxLength(10, { message: 'Max 10 symbols!' })
+  //TODO: одна из проверок требует прокидывание в провайдеры
+  //  @Validate(UserExistsByLoginValidator, { message: 'Login is exist!' })
+  //  @IsLoginInDb()
   login: string;
 
   @IsNotEmpty({ message: 'This field is required!' })
@@ -18,7 +28,8 @@ export class UserCreateInput {
   password: string;
 
   @IsNotEmpty({ message: 'This field is required!' })
-  @Matches(emailFormat, { message: 'Incorrect email format!' })
+  //@Matches(emailFormat, { message: 'Incorrect email format!' })
+  // @Validate(UserExistsByLoginValidator, { message: 'Email is exist!' })
   email: string;
 }
 

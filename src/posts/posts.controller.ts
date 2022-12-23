@@ -24,10 +24,12 @@ import {
   CommentCreateInput,
   CommentsService,
 } from '../comments/comments.service';
-import { AuthAdminGuard } from '../auth-admin.guard';
+import { AuthAdminGuard } from '../guards/auth-admin.guard';
 import { CommentsGetModel } from '../models/comments/CommentsGetModel';
-import { AuthUserGuard } from '../auth-user.guard';
+import { AuthUserGuard } from '../guards/auth-user.guard';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('posts')
 export class PostsController {
   constructor(

@@ -19,8 +19,10 @@ import { BlogsQueryRepository } from './blogs.query-repository';
 import { PostCreateForBlogInput, PostsService } from '../posts/posts.service';
 import { PostsQueryRepository } from '../posts/posts.query-repository';
 import { HTTP_STATUSES } from '../constants/general/general';
-import { AuthAdminGuard } from '../auth-admin.guard';
+import { AuthAdminGuard } from '../guards/auth-admin.guard';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('blogs')
 export class BlogsController {
   constructor(

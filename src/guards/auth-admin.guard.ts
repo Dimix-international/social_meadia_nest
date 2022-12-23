@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Request } from 'express';
-import { decodedBase64 } from './helpers/helpers';
-import { PASSWORD_ADMIN, Roles } from './constants/general/general';
+import { decodedBase64 } from '../helpers/helpers';
+import { PASSWORD_ADMIN, Roles } from '../constants/general/general';
 
 @Injectable()
 export class AuthAdminGuard implements CanActivate {

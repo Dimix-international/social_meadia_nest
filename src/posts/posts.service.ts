@@ -2,7 +2,7 @@ import { BlogsQueryRepository } from '../blogs/blogs.query-repository';
 import { PostsRepository } from './posts.repository';
 import { PostCreateModel } from '../models/posts/PostsCreateModel';
 import { Injectable } from '@nestjs/common';
-import { Post } from './classes';
+import { Post } from './dto';
 import { IsNotEmpty, MaxLength } from 'class-validator';
 
 export class PostCreateInput {

@@ -1,20 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { settings } from '../settings';
 import * as jwt from 'jsonwebtoken';
+import {
+  EXPIRES_TIME_ACCESS_TOKEN,
+  EXPIRES_TIME_REFRESH_TOKEN,
+} from '../constants/general/general';
 
 @Injectable()
 export class JwtService {
   async createJWT(payload: UserPayloadType): Promise<CreateJWTType> {
     const accessToken = jwt.sign(
-      { userid: payload.id },
+      { deviceId: payload.deviceId, userId: payload.userId },
       settings.JWT_SECRET_ACCESS,
-      { expiresIn: '9s' },
+      { expiresIn: EXPIRES_TIME_ACCESS_TOKEN },
     );
     const refreshToken = jwt.sign(
-      { userid: payload.id },
+      { deviceId: payload.deviceId, userId: payload.userId },
       settings.JWT_SECRET_REFRESH,
       {
-        expiresIn: '19s',
+        expiresIn: EXPIRES_TIME_REFRESH_TOKEN,
       },
     );
     return { accessToken, refreshToken };
@@ -25,19 +29,35 @@ export class JwtService {
         accessToken,
         settings.JWT_SECRET_ACCESS,
       );
-      return result.userid as string;
+      return result.deviceId as string;
     } catch (e) {
       return null;
     }
   }
   async validateRefreshToken(token: string) {
+    console.log('token', token);
     try {
-      const result: any = jwt.verify(token, settings.JWT_SECRET_REFRESH);
-      return result.userid as string;
+      const { deviceId, userId }: any = jwt.verify(
+        token,
+        settings.JWT_SECRET_REFRESH,
+      );
+      return {
+        deviceId,
+        userId,
+      };
     } catch (e) {
       return null;
     }
   }
+  async getCreatedDateToken(token: string) {
+    const payload: any = jwt.decode(token);
+    return new Date(payload.iat * 1000).toISOString();
+  }
+
+  // @Cron('every hour')
+  // async test() {
+  //   await devicesRepo.deleteMany({ lastActiveDate: { $sme: dateNow - 10000 } });
+  // }
 }
 
 type CreateJWTType = {
@@ -46,5 +66,6 @@ type CreateJWTType = {
 };
 
 type UserPayloadType = {
-  id: string;
+  deviceId: string;
+  userId: string;
 };

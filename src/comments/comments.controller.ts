@@ -16,8 +16,10 @@ import { UsersQueryRepository } from '../users/users.query-repository';
 import { CommentsQueryRepository } from './comments.query-repository';
 import { HTTP_STATUSES } from '../constants/general/general';
 import { CommentCreateInput, CommentsService } from './comments.service';
-import { AuthUserGuard } from '../auth-user.guard';
+import { AuthUserGuard } from '../guards/auth-user.guard';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('comments')
 export class CommentsController {
   constructor(

@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '../jwt/jwt.service';
 import * as bcrypt from 'bcrypt';
 import { AuthRepository } from './auth.repository';
+import { AuthDeviceDTO } from './dto';
+import { compareWithCurrentDate } from '../helpers/helpers';
 import { AuthQueryRepository } from './auth.query-repository';
 
 @Injectable()
@@ -15,51 +17,123 @@ export class AuthService {
   async checkCredentials(
     clientPassword: string,
     userHashPassword: string,
-    payload: UserPayloadType,
-  ): Promise<CheckCredentialsType | null> {
+  ): Promise<boolean> {
     const isRightPassword = await bcrypt.compare(
       clientPassword,
       userHashPassword,
     );
-    if (isRightPassword) {
-      return await this.jwtService.createJWT(payload);
-    }
-    return null;
+    return !!isRightPassword;
   }
 
-  async logout(userId: string): Promise<boolean> {
-    const { deletedCount } = await this.authRepository.removeToken(userId);
+  async logout(deviceId: string): Promise<boolean> {
+    const { deletedCount } = await this.authRepository.terminateDevice(
+      deviceId,
+    );
     return !!deletedCount;
   }
 
-  async saveToken(userId: string, token: string): Promise<boolean> {
-    const user = await this.authQueryRepository.getUser(userId);
+  async saveDevice(deviceData: SaveDeviceDataType): Promise<JWTType> {
+    const { userId, deviceTitle, ipAddress } = deviceData;
 
-    if (!user) {
-      await this.authRepository.saveToken(userId, token);
-      return true;
-    } else {
-      const { matchedCount } = await this.authRepository.updateToken(
-        userId,
-        token,
-      );
-      return !!matchedCount;
-    }
-  }
-  async updateToken(userId: string, token: string): Promise<boolean> {
-    const { matchedCount } = await this.authRepository.updateToken(
+    const device = new AuthDeviceDTO(userId, deviceTitle, ipAddress);
+
+    const { accessToken, refreshToken } = await this.jwtService.createJWT({
+      deviceId: device.deviceId,
       userId,
-      token,
+    });
+
+    const createdDateToken = await this.jwtService.getCreatedDateToken(
+      refreshToken,
+    );
+
+    device.setDateToken(createdDateToken);
+
+    await this.authRepository.saveDevice(device);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async updateDeviceToken(
+    deviceId: string,
+    token: string,
+    ip: string,
+    title: string,
+  ): Promise<boolean> {
+    const lastActiveDate = await this.jwtService.getCreatedDateToken(token);
+
+    const { matchedCount } = await this.authRepository.updateDeviceToken(
+      deviceId,
+      {
+        lastActiveDate,
+        ip,
+        title,
+      },
     );
     return !!matchedCount;
   }
+
+  async checkCorrectDeviceInfo(
+    tokenInfo: CheckCorrectDeviceType,
+    ip: string,
+    userAgent: string,
+  ): Promise<void> {
+    const { deviceId } = tokenInfo;
+
+    const device = await this.authQueryRepository.getDevice(deviceId);
+
+    if (!device) {
+      throw new UnauthorizedException();
+    }
+
+    const { lastActiveDate, ip: ipAddress, title } = device;
+
+    if (
+      !compareWithCurrentDate(lastActiveDate) ||
+      ip !== ipAddress ||
+      userAgent !== title
+    ) {
+      throw new UnauthorizedException();
+    }
+  }
+
+  async checkCorrectToken(
+    refreshToken: string | undefined,
+  ): Promise<CheckCorrectDeviceType> {
+    if (!refreshToken) {
+      throw new UnauthorizedException();
+    }
+
+    const tokenInfo = await this.jwtService.validateRefreshToken(refreshToken);
+
+    if (!tokenInfo) {
+      throw new UnauthorizedException();
+    }
+
+    return tokenInfo;
+  }
 }
 
-type CheckCredentialsType = {
+type SaveDeviceDataType = {
+  userId: string;
+  deviceTitle: string;
+  ipAddress: string;
+};
+
+type JWTType = {
   accessToken: string;
   refreshToken: string;
 };
 
-type UserPayloadType = {
-  id: string;
+type UpdateDeviceDataType = {
+  createdDateToken;
+  idAddress: string;
+  deviceTitle: string;
+};
+
+type CheckCorrectDeviceType = {
+  deviceId: string;
+  userId: string;
 };

@@ -3,20 +3,40 @@ import { AuthCollection } from '../db';
 
 @Injectable()
 export class AuthRepository {
-  async saveToken(userId: string, token: string) {
-    return await AuthCollection.insertOne({ userId, token });
+  async saveDevice(deviceData: DeviceDataType) {
+    return await AuthCollection.insertOne(deviceData);
   }
 
-  async updateToken(userId: string, token: string) {
+  async updateDeviceToken(deviceId: string, updateData: UpdateDeviceDataType) {
     return await AuthCollection.updateOne(
-      { userId },
+      { deviceId },
       {
-        $set: { token },
+        $set: updateData,
       },
     );
   }
 
-  async removeToken(userId: string) {
-    return await AuthCollection.deleteOne({ userId });
+  async terminateDevice(deviceId: string) {
+    return await AuthCollection.deleteOne({ deviceId });
+  }
+  async terminateAllOtherDevices(userId: string, currentDeviceId: string) {
+    return await AuthCollection.deleteMany({
+      userId: userId,
+      deviceId: { $ne: currentDeviceId },
+    });
   }
 }
+
+type DeviceDataType = {
+  userId: string;
+  lastActiveDate: string;
+  ip: string;
+  title: string;
+  deviceId: string;
+};
+
+type UpdateDeviceDataType = {
+  lastActiveDate;
+  ip: string;
+  title: string;
+};

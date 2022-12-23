@@ -18,19 +18,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     switch (status) {
       case 401: {
-        console.log('UNAUTHORIZED');
         response.sendStatus(status);
         break;
       }
       case 403: {
-        const errorResponse = [];
-        responseBody.message.forEach((m) => errorResponse.push(m));
-        response.status(status).json({
-          errorsMessages: errorResponse,
-        });
+        response.sendStatus(status);
         break;
       }
       case 404: {
+        response.sendStatus(status);
+        break;
+      }
+      case 429: {
         response.sendStatus(status);
         break;
       }

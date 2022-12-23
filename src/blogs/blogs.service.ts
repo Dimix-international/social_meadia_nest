@@ -1,6 +1,6 @@
 import { BlogCreateModel } from '../models/blogs/BlogCreateModel';
 import { BlogViewModel } from '../models/blogs/BlogViewModel';
-import { Blog } from './classes';
+import { Blog } from './dto';
 import { BlogUpdateModel } from '../models/blogs/BlogUpdateModel';
 import { Injectable } from '@nestjs/common';
 import { BlogsRepository } from './blogs.repository';

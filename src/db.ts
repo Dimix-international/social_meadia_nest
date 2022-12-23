@@ -24,7 +24,10 @@ export async function runDb() {
 
 type AuthType = {
   userId: string;
-  token: string;
+  lastActiveDate: string;
+  ip: string;
+  title: string;
+  deviceId: string;
 };
 
 type BlogType = {

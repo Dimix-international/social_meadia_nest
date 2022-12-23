@@ -24,9 +24,18 @@ import { AuthService } from './auth/auth.service';
 import { AuthRouterController } from './auth/auth.controller';
 import { AuthRepository } from './auth/auth.repository';
 import { AuthQueryRepository } from './auth/auth.query-repository';
+import { DevicesRouterController } from './devices/devices.controller';
+import { DevicesService } from './devices/devices.service';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
-  imports: [],
+  imports: [
+    ThrottlerModule.forRoot({
+      ttl: 10,
+      limit: 5,
+    }),
+  ],
   controllers: [
     BlogsController,
     PostsController,
@@ -34,6 +43,7 @@ import { AuthQueryRepository } from './auth/auth.query-repository';
     CommentsController,
     UserController,
     AuthRouterController,
+    DevicesRouterController,
   ],
   providers: [
     BlogsService,
@@ -55,6 +65,11 @@ import { AuthQueryRepository } from './auth/auth.query-repository';
     AuthService,
     AuthRepository,
     AuthQueryRepository,
+    DevicesService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

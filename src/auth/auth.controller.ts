@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Ip,
   NotFoundException,
   Post,
   Req,
@@ -23,16 +24,16 @@ import { AuthService } from './auth.service';
 import { UserLoginModel } from '../models/auth/UserLoginModel';
 import { HTTP_STATUSES } from '../constants/general/general';
 import { JwtService } from '../jwt/jwt.service';
-import { AuthUserGuard } from '../auth-user.guard';
-import { Cookies } from '../cookies.decorator';
-import { AuthQueryRepository } from './auth.query-repository';
+import { AuthUserGuard } from '../guards/auth-user.guard';
+import { Cookies } from '../decorators/params/cookies.decorator';
+import { UserAgent } from '../decorators/params/user-agent.decorator';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthRouterController {
   constructor(
     protected usersQueryRepository: UsersQueryRepository,
     protected authService: AuthService,
-    protected authQueryRepository: AuthQueryRepository,
     protected userService: UserService,
     protected emailsService: EmailsService,
     protected jwtService: JwtService,
@@ -41,6 +42,8 @@ export class AuthRouterController {
   @Post('/login')
   @HttpCode(HTTP_STATUSES.OK_200)
   async login(
+    @Ip() ip: string,
+    @UserAgent() userAgent: string,
     @Body() data: UserLoginModel,
     @Res({ passthrough: true }) res: Response,
   ) {
@@ -50,33 +53,23 @@ export class AuthRouterController {
       loginOrEmail,
     );
 
-    if (!user) {
-      throw new BadRequestException([
-        {
-          field: 'loginOrEmail',
-          message: 'User not found!',
-        },
-      ]);
-    }
+    if (!user) throw new UnauthorizedException();
 
     const { id } = user;
-    const { accessToken, refreshToken } =
-      await this.authService.checkCredentials(password, user.password, { id });
+    const isRightData = await this.authService.checkCredentials(
+      password,
+      user.password,
+    );
 
-    if (!accessToken || !refreshToken) {
+    if (!isRightData) {
       throw new UnauthorizedException();
     }
 
-    const isSavedToken = await this.authService.saveToken(id, refreshToken);
-
-    if (!isSavedToken) {
-      throw new BadRequestException([
-        {
-          field: 'loginOrEmail',
-          message: 'Something error!',
-        },
-      ]);
-    }
+    const { accessToken, refreshToken } = await this.authService.saveDevice({
+      userId: id,
+      deviceTitle: userAgent,
+      ipAddress: ip,
+    });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -86,72 +79,50 @@ export class AuthRouterController {
     return { accessToken };
   }
 
+  @SkipThrottle()
   @Post('/logout')
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   async logout(
+    @Ip() ip: string,
+    @UserAgent() userAgent: string,
     @Cookies('refreshToken') refreshToken: string | undefined,
     @Res({ passthrough: true }) res: Response,
   ) {
-    if (!refreshToken) {
-      throw new UnauthorizedException();
-    }
+    const tokenInfo = await this.authService.checkCorrectToken(refreshToken);
 
-    const userId = await this.jwtService.validateRefreshToken(refreshToken);
+    await this.authService.checkCorrectDeviceInfo(tokenInfo, ip, userAgent);
 
-    if (!userId) {
-      throw new UnauthorizedException();
-    }
-
-    const user = await this.authQueryRepository.getUser(userId);
-
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
-    const { token } = user;
-
-    if (token !== refreshToken) {
-      throw new UnauthorizedException();
-    }
-
-    await this.authService.logout(userId);
+    await this.authService.logout(tokenInfo.deviceId);
     res.clearCookie('refreshToken');
   }
 
+  @SkipThrottle()
   @Post('/refresh-token')
   @HttpCode(HTTP_STATUSES.OK_200)
   async refreshToken(
+    @Ip() ip: string,
+    @UserAgent() userAgent: string,
     @Cookies('refreshToken') refreshToken: string | undefined,
     @Res({ passthrough: true }) res: Response,
   ) {
-    if (!refreshToken) {
-      throw new UnauthorizedException();
-    }
+    const tokenInfo = await this.authService.checkCorrectToken(refreshToken);
 
-    const userId = await this.jwtService.validateRefreshToken(refreshToken);
+    await this.authService.checkCorrectDeviceInfo(tokenInfo, ip, userAgent);
 
-    if (!userId) {
-      throw new UnauthorizedException();
-    }
-
-    const user = await this.authQueryRepository.getUser(userId);
-
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
-    const { token } = user;
-
-    if (token !== refreshToken) {
-      throw new UnauthorizedException();
-    }
+    const { deviceId, userId } = tokenInfo;
 
     const { refreshToken: newRefreshToken, accessToken } =
       await this.jwtService.createJWT({
-        id: userId,
+        deviceId,
+        userId,
       });
 
-    await this.authService.updateToken(userId, newRefreshToken);
+    await this.authService.updateDeviceToken(
+      deviceId,
+      newRefreshToken,
+      ip,
+      userAgent,
+    );
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,

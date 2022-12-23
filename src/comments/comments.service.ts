@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CommentsRepository } from './comments.repository';
-import { Comment } from './classes';
+import { Comment } from './dto';
 import { IsNotEmpty, MaxLength, MinLength } from 'class-validator';
 
 export class CommentCreateInput {

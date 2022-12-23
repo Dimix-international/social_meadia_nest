@@ -15,8 +15,10 @@ import { UsersQueryRepository } from './users.query-repository';
 import { UserCreateInput, UserService } from './users.service';
 import { transformInNumber } from '../helpers/helpers';
 import { HTTP_STATUSES } from '../constants/general/general';
-import { AuthAdminGuard } from '../auth-admin.guard';
+import { AuthAdminGuard } from '../guards/auth-admin.guard';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('users')
 export class UserController {
   constructor(
