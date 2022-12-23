@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '../jwt/jwt.service';
 import * as bcrypt from 'bcrypt';
 import { AuthRepository } from './auth.repository';
@@ -86,7 +90,7 @@ export class AuthService {
       ip !== ipAddress ||
       userAgent !== title
     ) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
   }
 
