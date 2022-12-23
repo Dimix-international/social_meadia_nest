@@ -7,6 +7,7 @@ import {
   Ip,
   NotFoundException,
   Param,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthQueryRepository } from '../auth/auth.query-repository';
 import { Cookies } from '../decorators/params/cookies.decorator';
@@ -15,6 +16,7 @@ import { UserAgent } from '../decorators/params/user-agent.decorator';
 import { SecurityService } from './security.service';
 import { AuthService } from '../auth/auth.service';
 import { SkipThrottle } from '@nestjs/throttler';
+import { compareWithCurrentDate } from '../helpers/helpers';
 
 @SkipThrottle()
 @Controller('security')
@@ -68,7 +70,23 @@ export class SecurityControllerController {
   ) {
     const tokenInfo = await this.authService.checkCorrectToken(refreshToken);
 
-    await this.authService.checkCorrectDeviceInfo(tokenInfo, ip, userAgent);
+    //await this.authService.checkCorrectDeviceInfo(tokenInfo, ip, userAgent);
+
+    const device = await this.authQueryRepository.getDevice(tokenInfo.deviceId);
+
+    if (!device) {
+      throw new UnauthorizedException();
+    }
+
+    const { lastActiveDate, ip: ipAddress, title } = device;
+
+    if (!compareWithCurrentDate(lastActiveDate)) {
+      throw new UnauthorizedException();
+    }
+
+    /*    if (ip !== ipAddress || userAgent !== title) {
+      throw new ForbiddenException();
+    }*/
 
     const { deviceId, userId } = tokenInfo;
 
