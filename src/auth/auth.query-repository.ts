@@ -3,13 +3,13 @@ import { AuthCollection } from '../db';
 
 @Injectable()
 export class AuthQueryRepository {
-  async getDevice(deviceId: string): Promise<GetUserType | null> {
+  async getDevice(deviceId: string): Promise<GetDeviceType | null> {
     return await AuthCollection.findOne(
       { deviceId },
       { projection: { _id: 0 } },
     );
   }
-  async getDevices(userId): Promise<GetUserType[]> {
+  async getDevices(userId): Promise<GetDeviceType[]> {
     return await AuthCollection.find(
       { userId },
       { projection: { _id: 0 } },
@@ -17,7 +17,7 @@ export class AuthQueryRepository {
   }
 }
 
-type GetUserType = {
+type GetDeviceType = {
   userId: string;
   lastActiveDate: string;
   ip: string;

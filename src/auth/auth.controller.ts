@@ -117,12 +117,7 @@ export class AuthRouterController {
         userId,
       });
 
-    await this.authService.updateDeviceToken(
-      deviceId,
-      newRefreshToken,
-      ip,
-      userAgent,
-    );
+    await this.authService.updateDeviceToken(deviceId, newRefreshToken);
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,

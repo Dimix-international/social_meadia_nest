@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   Ip,
+  NotFoundException,
   Param,
 } from '@nestjs/common';
 import { AuthQueryRepository } from '../auth/auth.query-repository';
@@ -21,7 +22,7 @@ export class DevicesRouterController {
   constructor(
     protected authQueryRepository: AuthQueryRepository,
     protected authService: AuthService,
-    protected securityService: DevicesService,
+    protected deviceService: DevicesService,
   ) {}
 
   @Get()
@@ -32,16 +33,17 @@ export class DevicesRouterController {
     return await this.authQueryRepository.getDevices(tokenInfo.userId);
   }
 
-  @Delete('/:deviceId')
+  @Delete('/:id')
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   async terminateDevice(
     @Ip() ip: string,
     @UserAgent() userAgent: string,
     @Cookies('refreshToken') refreshToken: string | undefined,
-    @Param('deviceId') removeDevice: string,
+    @Param('id') removeDevice: string,
   ) {
     const tokenInfo = await this.authService.checkCorrectToken(refreshToken);
 
+    await this.deviceService.checkExistDevice(removeDevice);
     await this.authService.checkCorrectDeviceInfo(tokenInfo, ip, userAgent);
 
     const allDevices = await this.authQueryRepository.getDevices(
@@ -54,13 +56,7 @@ export class DevicesRouterController {
       throw new ForbiddenException();
     }
 
-    const isTerminateDevice = await this.securityService.terminateDevice(
-      removeDevice,
-    );
-
-    if (!isTerminateDevice) {
-      throw new ForbiddenException();
-    }
+    await this.deviceService.terminateDevice(removeDevice);
   }
 
   @Delete()
@@ -76,6 +72,6 @@ export class DevicesRouterController {
 
     const { deviceId, userId } = tokenInfo;
 
-    await this.securityService.terminateAllRemoteDevices(deviceId, userId);
+    await this.deviceService.terminateAllRemoteDevices(deviceId, userId);
   }
 }

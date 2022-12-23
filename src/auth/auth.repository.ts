@@ -7,11 +7,11 @@ export class AuthRepository {
     return await AuthCollection.insertOne(deviceData);
   }
 
-  async updateDeviceToken(deviceId: string, updateData: UpdateDeviceDataType) {
+  async updateDeviceToken(deviceId: string, lastActiveDate: string) {
     return await AuthCollection.updateOne(
       { deviceId },
       {
-        $set: updateData,
+        $set: { lastActiveDate },
       },
     );
   }
@@ -33,10 +33,4 @@ type DeviceDataType = {
   ip: string;
   title: string;
   deviceId: string;
-};
-
-type UpdateDeviceDataType = {
-  lastActiveDate;
-  ip: string;
-  title: string;
 };
