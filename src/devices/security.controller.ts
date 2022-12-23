@@ -70,23 +70,13 @@ export class SecurityControllerController {
   ) {
     const tokenInfo = await this.authService.checkCorrectToken(refreshToken);
 
-    //await this.authService.checkCorrectDeviceInfo(tokenInfo, ip, userAgent);
+    await this.authService.checkCorrectDeviceInfo(tokenInfo, ip, userAgent);
 
     const device = await this.authQueryRepository.getDevice(tokenInfo.deviceId);
 
     if (!device) {
       throw new UnauthorizedException();
     }
-
-    const { lastActiveDate, ip: ipAddress, title } = device;
-
-    if (!compareWithCurrentDate(lastActiveDate)) {
-      throw new UnauthorizedException();
-    }
-
-    /*    if (ip !== ipAddress || userAgent !== title) {
-      throw new ForbiddenException();
-    }*/
 
     const { deviceId, userId } = tokenInfo;
 
