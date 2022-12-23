@@ -12,13 +12,12 @@ export class AuthQueryRepository {
   async getDevices(userId): Promise<GetDeviceType[]> {
     return await AuthCollection.find(
       { userId },
-      { projection: { _id: 0 } },
+      { projection: { _id: 0, userId: 0 } },
     ).toArray();
   }
 }
 
 type GetDeviceType = {
-  userId: string;
   lastActiveDate: string;
   ip: string;
   title: string;

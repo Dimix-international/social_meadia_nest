@@ -33,13 +33,13 @@ export class SecurityControllerController {
     return await this.authQueryRepository.getDevices(tokenInfo.userId);
   }
 
-  @Delete('devices/:id')
+  @Delete('devices/:deviceId')
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   async terminateDevice(
     @Ip() ip: string,
     @UserAgent() userAgent: string,
     @Cookies('refreshToken') refreshToken: string | undefined,
-    @Param('id') removeDevice: string,
+    @Param('deviceId') removeDevice: string,
   ) {
     const tokenInfo = await this.authService.checkCorrectToken(refreshToken);
 
