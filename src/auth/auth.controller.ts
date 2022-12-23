@@ -106,7 +106,6 @@ export class AuthRouterController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const tokenInfo = await this.authService.checkCorrectToken(refreshToken);
-
     await this.authService.checkCorrectDeviceInfo(tokenInfo, ip, userAgent);
 
     const { deviceId, userId } = tokenInfo;

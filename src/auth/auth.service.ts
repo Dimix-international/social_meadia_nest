@@ -60,14 +60,10 @@ export class AuthService {
     };
   }
 
-  async updateDeviceToken(deviceId: string, token: string): Promise<boolean> {
+  async updateDeviceToken(deviceId: string, token: string): Promise<void> {
     const lastActiveDate = await this.jwtService.getCreatedDateToken(token);
 
-    const { matchedCount } = await this.authRepository.updateDeviceToken(
-      deviceId,
-      lastActiveDate,
-    );
-    return !!matchedCount;
+    await this.authRepository.updateDeviceToken(deviceId, lastActiveDate);
   }
 
   async checkCorrectDeviceInfo(
@@ -88,6 +84,11 @@ export class AuthService {
     if (!compareWithCurrentDate(lastActiveDate)) {
       throw new UnauthorizedException();
     }
+
+    console.log('ip', ip);
+    console.log('ipAddress', ipAddress);
+    console.log('userAgent', userAgent);
+    console.log('title', title);
 
     if (ip !== ipAddress || userAgent !== title) {
       throw new ForbiddenException();
@@ -120,12 +121,6 @@ type SaveDeviceDataType = {
 type JWTType = {
   accessToken: string;
   refreshToken: string;
-};
-
-type UpdateDeviceDataType = {
-  createdDateToken;
-  idAddress: string;
-  deviceTitle: string;
 };
 
 type CheckCorrectDeviceType = {

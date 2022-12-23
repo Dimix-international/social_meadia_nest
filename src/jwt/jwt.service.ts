@@ -35,7 +35,6 @@ export class JwtService {
     }
   }
   async validateRefreshToken(token: string) {
-    console.log('token', token);
     try {
       const { deviceId, userId }: any = jwt.verify(
         token,
