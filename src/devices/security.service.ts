@@ -3,7 +3,7 @@ import { AuthRepository } from '../auth/auth.repository';
 import { AuthQueryRepository } from '../auth/auth.query-repository';
 
 @Injectable()
-export class DevicesService {
+export class SecurityService {
   constructor(
     protected authRepository: AuthRepository,
     protected authQueryRepository: AuthQueryRepository,

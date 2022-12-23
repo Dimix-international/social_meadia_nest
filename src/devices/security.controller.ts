@@ -12,20 +12,20 @@ import { AuthQueryRepository } from '../auth/auth.query-repository';
 import { Cookies } from '../decorators/params/cookies.decorator';
 import { HTTP_STATUSES } from '../constants/general/general';
 import { UserAgent } from '../decorators/params/user-agent.decorator';
-import { DevicesService } from './devices.service';
+import { SecurityService } from './security.service';
 import { AuthService } from '../auth/auth.service';
 import { SkipThrottle } from '@nestjs/throttler';
 
 @SkipThrottle()
-@Controller('devices')
-export class DevicesRouterController {
+@Controller('security')
+export class SecurityControllerController {
   constructor(
     protected authQueryRepository: AuthQueryRepository,
     protected authService: AuthService,
-    protected deviceService: DevicesService,
+    protected deviceService: SecurityService,
   ) {}
 
-  @Get()
+  @Get('/devices')
   async getActiveDevices(
     @Cookies('refreshToken') refreshToken: string | undefined,
   ) {
@@ -33,7 +33,7 @@ export class DevicesRouterController {
     return await this.authQueryRepository.getDevices(tokenInfo.userId);
   }
 
-  @Delete('/:id')
+  @Delete('devices/:id')
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   async terminateDevice(
     @Ip() ip: string,
@@ -59,7 +59,7 @@ export class DevicesRouterController {
     await this.deviceService.terminateDevice(removeDevice);
   }
 
-  @Delete()
+  @Delete('/devices')
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   async terminateRemoteDevices(
     @Ip() ip: string,
