@@ -3,7 +3,7 @@ import {
   INestApplication,
   ValidationPipe,
 } from '@nestjs/common';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import { HttpExceptionFilter } from '../exception.filter';
 
 export const createApp = (app: INestApplication) => {
