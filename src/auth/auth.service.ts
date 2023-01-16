@@ -74,24 +74,27 @@ export class AuthService {
     tokenInfo: CheckCorrectDeviceType,
     ip: string,
     userAgent: string,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const { deviceId } = tokenInfo;
 
     const device = await this.authQueryRepository.getDevice(deviceId);
 
     if (!device) {
-      throw new UnauthorizedException();
+      return false;
     }
 
     const { lastActiveDate, ip: ipAddress, title } = device;
 
     if (!compareWithCurrentDate(lastActiveDate)) {
-      throw new UnauthorizedException();
+      return false;
     }
 
     /*    if (ip !== ipAddress || userAgent !== title) {
       throw new ForbiddenException();
+      return false;
     }*/
+
+    return true;
   }
 
   async checkCorrectToken(

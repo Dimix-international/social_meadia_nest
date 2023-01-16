@@ -90,7 +90,15 @@ export class AuthRouterController {
   ) {
     const tokenInfo = await this.authService.checkCorrectToken(refreshToken);
 
-    await this.authService.checkCorrectDeviceInfo(tokenInfo, ip, userAgent);
+    const isCorrectDevice = this.authService.checkCorrectDeviceInfo(
+      tokenInfo,
+      ip,
+      userAgent,
+    );
+
+    if (!isCorrectDevice) {
+      throw new UnauthorizedException();
+    }
 
     await this.authService.logout(tokenInfo.deviceId);
     res.clearCookie('refreshToken');
@@ -106,7 +114,15 @@ export class AuthRouterController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const tokenInfo = await this.authService.checkCorrectToken(refreshToken);
-    await this.authService.checkCorrectDeviceInfo(tokenInfo, ip, userAgent);
+    const isCorrectDevice = this.authService.checkCorrectDeviceInfo(
+      tokenInfo,
+      ip,
+      userAgent,
+    );
+
+    if (!isCorrectDevice) {
+      throw new UnauthorizedException();
+    }
 
     const { deviceId, userId } = tokenInfo;
 

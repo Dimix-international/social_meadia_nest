@@ -1,6 +1,6 @@
-import { BlogsCollection } from '../db';
 import { Injectable } from '@nestjs/common';
 import { getPagesCount, getSkip } from '../helpers/helpers';
+import { BlogModel } from './schema/blog-schema';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -11,7 +11,7 @@ export class BlogsQueryRepository {
     sortBy: string,
     sortDirection: 'asc' | 'desc',
   ): Promise<BlogsType> {
-    const result = await BlogsCollection.aggregate([
+    /*    const result = await BlogsCollection.aggregate([
       {
         $facet: {
           items: [
@@ -65,11 +65,42 @@ export class BlogsQueryRepository {
       pageSize: pageSize,
       totalCount: totalCount || 0,
       items: items as BlogType[],
+    };*/
+
+    console.log('blogs');
+    const [blogs, totalCount] = await Promise.all([
+      BlogModel.find({
+        $match: {
+          name: searchNameTerm
+            ? { $regex: new RegExp(searchNameTerm, 'i') }
+            : { $ne: null },
+        },
+      })
+        .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+        .skip(getSkip(pageNumber, pageSize))
+        .select('-_id -__v -updatedAt')
+        .lean(),
+      BlogModel.find({
+        $match: {
+          name: searchNameTerm
+            ? { $regex: new RegExp(searchNameTerm, 'i') }
+            : { $ne: null },
+        },
+      }).countDocuments(),
+    ]);
+
+    return {
+      pagesCount: getPagesCount(totalCount || 0, pageSize),
+      page: pageNumber,
+      pageSize: pageSize,
+      totalCount: totalCount || 0,
+      items: [],
     };
   }
 
   async getBlogById(id: string): Promise<BlogType | null> {
-    return await BlogsCollection.findOne({ id }, { projection: { _id: 0 } });
+    const blog = await BlogModel.findOne({ id }).select('-_id -__v');
+    return blog;
   }
 }
 

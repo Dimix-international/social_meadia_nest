@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CommentsCollection } from '../db';
 import { getPagesCount, getSkip } from '../helpers/helpers';
+import { CommentModel } from './schema/comment-schema';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -11,13 +11,22 @@ export class CommentsQueryRepository {
     sortBy: string,
     sortDirection: 'asc' | 'desc',
   ): Promise<CommentsType> {
-    const [items, totalCount] = await Promise.all([
+    /*    const [items, totalCount] = await Promise.all([
       CommentsCollection.find({ postId }, { projection: { _id: 0, postId: 0 } })
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(getSkip(pageNumber, pageSize))
         .limit(pageSize)
         .toArray(),
       CommentsCollection.countDocuments({ postId }),
+    ]);*/
+
+    const [items, totalCount] = await Promise.all([
+      CommentModel.find({ postId })
+        .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+        .skip(getSkip(pageNumber, pageSize))
+        .select('-_id -__v -updatedAt')
+        .lean(),
+      CommentModel.find({ postId }).countDocuments(),
     ]);
 
     return {
@@ -30,10 +39,10 @@ export class CommentsQueryRepository {
   }
 
   async getCommentById(id: string): Promise<CommentType | null> {
-    return await CommentsCollection.findOne(
-      { id },
-      { projection: { _id: 0, postId: 0 } },
+    const comment = await CommentModel.findOne({ id }).select(
+      '-_id -__v -updatedAt',
     );
+    return comment;
   }
 }
 

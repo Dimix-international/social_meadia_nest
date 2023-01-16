@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PostsCollection } from '../db';
 import { getPagesCount, getSkip } from '../helpers/helpers';
+import { PostModel } from './schema/schemaType';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -10,13 +10,22 @@ export class PostsQueryRepository {
     sortBy: string,
     sortDirection: 'asc' | 'desc',
   ): Promise<PostsType> {
-    const [result, totalCount] = await Promise.all([
+    /*    const [result, totalCount] = await Promise.all([
       PostsCollection.find({}, { projection: { _id: 0 } })
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(getSkip(pageNumber, pageSize))
         .limit(pageSize)
         .toArray(),
       PostsCollection.countDocuments(),
+    ]);*/
+
+    const [result, totalCount] = await Promise.all([
+      PostModel.find({})
+        .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+        .skip(getSkip(pageNumber, pageSize))
+        .select('-_id -__v -updatedAt')
+        .lean(),
+      PostModel.find({}).countDocuments(),
     ]);
 
     return {
@@ -24,11 +33,12 @@ export class PostsQueryRepository {
       page: pageNumber,
       pageSize,
       totalCount: totalCount || 0,
-      items: result as PostType[],
+      items: result,
     };
   }
   async getPostById(id: string): Promise<PostType | null> {
-    return await PostsCollection.findOne({ id }, { projection: { _id: 0 } });
+    const post = await PostModel.findOne({ id }).select('-_id -__v -updatedAt');
+    return post;
   }
   async getPostsForBlog(
     pageNumber: number,
@@ -37,7 +47,7 @@ export class PostsQueryRepository {
     sortDirection: 'asc' | 'desc',
     blogId: string,
   ): Promise<PostsType> {
-    const result = PostsCollection.aggregate([
+    /*    const result = PostsCollection.aggregate([
       {
         $facet: {
           items: [
@@ -79,14 +89,31 @@ export class PostsQueryRepository {
     const aggregateResult = await result.toArray();
 
     const { items, count } = aggregateResult[0];
-    const { totalCount } = count[0] || {};
+    const { totalCount } = count[0] || {};*/
+
+    const [items, totalCount] = await Promise.all([
+      PostModel.find({
+        $match: {
+          blogId: blogId,
+        },
+      })
+        .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+        .skip(getSkip(pageNumber, pageSize))
+        .select('-_id -__v -updatedAt')
+        .lean(),
+      PostModel.find({
+        $match: {
+          blogId: blogId,
+        },
+      }).countDocuments(),
+    ]);
 
     return {
       pagesCount: getPagesCount(totalCount || 0, pageSize),
       page: pageNumber,
       pageSize,
       totalCount: totalCount || 0,
-      items: items as PostType[],
+      items: items,
     };
   }
 }

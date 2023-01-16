@@ -1,21 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { PostsCollection } from '../db';
+import { PostModel } from './schema/schemaType';
 
 @Injectable()
 export class PostsRepository {
   async createPost(data: CreatePostType) {
-    return await PostsCollection.insertOne(data);
+    const post = await PostModel.create(data);
+    return post;
   }
   async deletePostById(id: string) {
-    return await PostsCollection.deleteOne({ id });
+    const deletedPost = await PostModel.deleteOne({ id });
+    return deletedPost;
   }
   async updatePostById(id: string, data: UpdatePostType) {
-    return await PostsCollection.updateOne(
-      { id },
-      {
-        $set: { ...data },
-      },
-    );
+    const updatedPost = await PostModel.updateOne({ id }, { ...data });
+    return updatedPost;
   }
 }
 

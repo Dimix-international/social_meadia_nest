@@ -38,6 +38,8 @@ export class UserController {
       searchEmailTerm = null,
     } = data;
 
+    console.log('here', data);
+
     return await this.usersQueryRepository.getUsers(
       transformInNumber(pageNumber, 1),
       transformInNumber(pageSize, 10),

@@ -1,31 +1,36 @@
 import { Injectable } from '@nestjs/common';
-import { UsersCollection } from '../db';
+import { UserModel } from './schema/user-schema';
 
 @Injectable()
 export class UsersRepository {
   async deleteUser(id: string) {
-    return await UsersCollection.deleteOne({ id });
+    const deletedUser = await UserModel.deleteOne({ id });
+    return deletedUser;
   }
   async createUser(data: CreateUserType) {
-    return await UsersCollection.insertOne(data);
+    const createdUser = await UserModel.create(data);
+    return createdUser;
   }
   async activateUser(userId: string) {
-    return await UsersCollection.updateOne(
+    const updatedUser = await UserModel.updateOne(
       { id: userId },
-      { $set: { isActivated: true } },
+      { isActivated: true },
     );
+    return updatedUser;
   }
   async updateCountSendEmails(userId: string) {
-    return await UsersCollection.updateOne(
+    const updatedUser = await UserModel.updateOne(
       { id: userId },
       { $inc: { countSendEmailsActivated: 1 } },
     );
+    return updatedUser;
   }
   async createNewActivatedCode(userId: string, code: string) {
-    return await UsersCollection.updateOne(
+    const updatedUser = await UserModel.updateOne(
       { id: userId },
-      { $set: { activationCode: code } },
+      { activationCode: code },
     );
+    return updatedUser;
   }
 }
 

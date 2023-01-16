@@ -46,7 +46,15 @@ export class SecurityControllerController {
     const tokenInfo = await this.authService.checkCorrectToken(refreshToken);
 
     await this.deviceService.checkExistDevice(removeDevice);
-    await this.authService.checkCorrectDeviceInfo(tokenInfo, ip, userAgent);
+    const isCorrectDevice = this.authService.checkCorrectDeviceInfo(
+      tokenInfo,
+      ip,
+      userAgent,
+    );
+
+    if (!isCorrectDevice) {
+      throw new UnauthorizedException();
+    }
 
     const allDevices = await this.authQueryRepository.getDevices(
       tokenInfo.userId,
@@ -70,7 +78,15 @@ export class SecurityControllerController {
   ) {
     const tokenInfo = await this.authService.checkCorrectToken(refreshToken);
 
-    await this.authService.checkCorrectDeviceInfo(tokenInfo, ip, userAgent);
+    const isCorrectDevice = this.authService.checkCorrectDeviceInfo(
+      tokenInfo,
+      ip,
+      userAgent,
+    );
+
+    if (!isCorrectDevice) {
+      throw new UnauthorizedException();
+    }
 
     const device = await this.authQueryRepository.getDevice(tokenInfo.deviceId);
 

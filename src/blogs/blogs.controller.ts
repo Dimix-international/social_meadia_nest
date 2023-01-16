@@ -23,7 +23,7 @@ import { AuthAdminGuard } from '../guards/auth-admin.guard';
 import { SkipThrottle } from '@nestjs/throttler';
 
 @SkipThrottle()
-@Controller('blogs')
+@Controller('123')
 export class BlogsController {
   constructor(
     protected postsQueryRepository: PostsQueryRepository,

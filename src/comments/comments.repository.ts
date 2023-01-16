@@ -1,23 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { CommentsCollection } from '../db';
+import { CommentModel } from './schema/comment-schema';
 
 @Injectable()
 export class CommentsRepository {
   async createCommentForPost(data: CreateCommentType) {
-    return await CommentsCollection.insertOne(data);
+    const createdComment = await CommentModel.create(data);
+    return createdComment;
   }
   async deleteComment(id: string) {
-    return await CommentsCollection.deleteOne({ id });
+    const deletedComment = await CommentModel.deleteOne({ id });
+    return deletedComment;
   }
   async updateComment(id: string, content: string) {
-    return await CommentsCollection.updateOne(
-      { id },
-      {
-        $set: {
-          content,
-        },
-      },
-    );
+    const updatedComment = await CommentModel.updateOne({ id }, { content });
+    return updatedComment;
   }
 }
 

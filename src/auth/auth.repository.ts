@@ -1,29 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { AuthCollection } from '../db';
+import { AuthModel } from './schema/schema-type';
 
 @Injectable()
 export class AuthRepository {
   async saveDevice(deviceData: DeviceDataType) {
-    return await AuthCollection.insertOne(deviceData);
+    const device = await AuthModel.create(deviceData);
+    return device;
   }
 
   async updateDeviceToken(deviceId: string, lastActiveDate: string) {
-    return await AuthCollection.updateOne(
+    const updatedDeviceToken = await AuthModel.updateOne(
       { deviceId },
-      {
-        $set: { lastActiveDate },
-      },
+      { lastActiveDate },
     );
+    return updatedDeviceToken;
   }
 
   async terminateDevice(deviceId: string) {
-    return await AuthCollection.deleteOne({ deviceId });
+    const terminatedDevice = await AuthModel.deleteOne({ deviceId });
+    return terminatedDevice;
   }
   async terminateAllOtherDevices(userId: string, currentDeviceId: string) {
-    return await AuthCollection.deleteMany({
+    const terminatedDevices = await AuthModel.deleteMany({
       userId: userId,
       deviceId: { $ne: currentDeviceId },
     });
+    return terminatedDevices;
   }
 }
 

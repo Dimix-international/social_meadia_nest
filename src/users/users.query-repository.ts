@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { UsersCollection } from '../db';
 import { getPagesCount, getSkip } from '../helpers/helpers';
+import { UserModel } from './schema/user-schema';
 
 @Injectable()
 export class UsersQueryRepository {
@@ -12,7 +12,7 @@ export class UsersQueryRepository {
     searchLoginTerm: string | null,
     searchEmailTerm: string | null,
   ): Promise<UsersType> {
-    const result = await UsersCollection.aggregate([
+    const aggregateResult = await UserModel.aggregate([
       {
         $facet: {
           items: [
@@ -49,6 +49,10 @@ export class UsersQueryRepository {
                 password: 0,
                 activationLink: 0,
                 isActivated: 0,
+                updatedAt: 0,
+                __v: 0,
+                activationCode: 0,
+                countSendEmailsActivated: 0,
               },
             },
           ],
@@ -76,8 +80,6 @@ export class UsersQueryRepository {
         },
       },
     ]);
-    const aggregateResult = await result.toArray();
-
     const { items, count } = aggregateResult[0] || {};
     const { totalCount } = count[0] || {};
 
@@ -86,11 +88,11 @@ export class UsersQueryRepository {
       page: pageNumber,
       pageSize: pageSize,
       totalCount: totalCount || 0,
-      items: items as GetUserType[],
+      items,
     };
   }
   async getUserById(id: string): Promise<UserType | null> {
-    return await UsersCollection.findOne(
+    /*    return await UsersCollection.findOne(
       { id },
       {
         projection: {
@@ -101,21 +103,24 @@ export class UsersQueryRepository {
           countSendEmailsActivated: 0,
         },
       },
+    );*/
+    const user = await UserModel.findOne({ id }).select(
+      '-id -password -__v -activationLink -isActivated -countSendEmailsActivated',
     );
+    return user;
   }
   async getUserByEmailLogin(emailOrLogin: string): Promise<UserType | null> {
-    return await UsersCollection.findOne(
-      {
-        $or: [{ login: emailOrLogin }, { email: emailOrLogin }],
-      },
-      { projection: { _id: 0 } },
-    );
+    const user = await UserModel.findOne({
+      $or: [{ login: emailOrLogin }, { email: emailOrLogin }],
+    }).select('-id -__v');
+    return user;
   }
 
   async getUserByActivatedCode(
     activationCode: string,
   ): Promise<UserType | null> {
-    return await UsersCollection.findOne({ activationCode });
+    const user = await UserModel.findOne({ activationCode });
+    return user;
   }
 }
 
