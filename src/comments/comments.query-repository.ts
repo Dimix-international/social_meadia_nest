@@ -1,9 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { getPagesCount, getSkip } from '../helpers/helpers';
-import { CommentModel } from './schema/comment-schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Comment, CommentDocument } from './schema/comment-nest.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class CommentsQueryRepository {
+  constructor(
+    @InjectModel(Comment.name)
+    private readonly commentModel: Model<CommentDocument>,
+  ) {}
+
   async getComments(
     postId: string,
     pageNumber: number,
@@ -21,12 +28,13 @@ export class CommentsQueryRepository {
     ]);*/
 
     const [items, totalCount] = await Promise.all([
-      CommentModel.find({ postId })
+      this.commentModel
+        .find({ postId })
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(getSkip(pageNumber, pageSize))
-        .select('-_id -__v -updatedAt')
+        .select('-_id -updatedAt')
         .lean(),
-      CommentModel.find({ postId }).countDocuments(),
+      this.commentModel.find({ postId }).countDocuments(),
     ]);
 
     return {
@@ -39,10 +47,7 @@ export class CommentsQueryRepository {
   }
 
   async getCommentById(id: string): Promise<CommentType | null> {
-    const comment = await CommentModel.findOne({ id }).select(
-      '-_id -__v -updatedAt',
-    );
-    return comment;
+    return this.commentModel.findOne({ id }).select('-_id -updatedAt').lean();
   }
 }
 

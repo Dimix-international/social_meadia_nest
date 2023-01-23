@@ -28,48 +28,76 @@ import { SecurityControllerController } from './devices/security.controller';
 import { SecurityService } from './devices/security.service';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { MongooseModule } from '@nestjs/mongoose';
+import { settings } from './settings';
+import { Post, PostSchema } from './posts/schema/post-nest.schema';
+import { Blog, BlogSchema } from './blogs/schema/blog-nest.schema';
+import { Auth, AuthSchema } from './auth/schema/auth-nest.schema';
+import { Comment, CommentSchema } from './comments/schema/comment-nest.schema';
+import { User, UserSchema } from './users/schema/user-nest.schema';
+
+const guards = [
+  {
+    provide: APP_GUARD,
+    useClass: ThrottlerGuard,
+  },
+];
+
+const controllers = [
+  BlogsController,
+  PostsController,
+  TestingDataController,
+  CommentsController,
+  UserController,
+  AuthRouterController,
+  SecurityControllerController,
+];
+
+const services = [
+  BlogsService,
+  UserService,
+  CommentsService,
+  EmailsService,
+  JwtService,
+  AuthService,
+  SecurityService,
+  PostsService,
+];
+
+const repositories = [
+  BlogsRepository,
+  BlogsQueryRepository,
+  PostsRepository,
+  PostsQueryRepository,
+  UsersRepository,
+  UsersQueryRepository,
+  CommentsRepository,
+  CommentsQueryRepository,
+  TestingDataRepository,
+  AuthRepository,
+  AuthQueryRepository,
+];
+
+const adapters = [EmailAdapter];
+
+const models = [
+  { name: Post.name, schema: PostSchema },
+  { name: Blog.name, schema: BlogSchema },
+  { name: Auth.name, schema: AuthSchema },
+  { name: Comment.name, schema: CommentSchema },
+  { name: User.name, schema: UserSchema },
+];
 
 @Module({
   imports: [
+    MongooseModule.forRoot(`${settings.MONGO_URI}/${settings.MONGO_DBName}`),
+    MongooseModule.forFeature(models),
     ThrottlerModule.forRoot({
       ttl: 10,
       limit: 5,
     }),
   ],
-  controllers: [
-    BlogsController,
-    PostsController,
-    TestingDataController,
-    CommentsController,
-    UserController,
-    AuthRouterController,
-    SecurityControllerController,
-  ],
-  providers: [
-    BlogsService,
-    BlogsRepository,
-    BlogsQueryRepository,
-    PostsService,
-    PostsRepository,
-    PostsQueryRepository,
-    UsersRepository,
-    UsersQueryRepository,
-    UserService,
-    CommentsService,
-    CommentsRepository,
-    CommentsQueryRepository,
-    TestingDataRepository,
-    EmailsService,
-    EmailAdapter,
-    JwtService,
-    AuthService,
-    AuthRepository,
-    AuthQueryRepository,
-    SecurityService,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
+  controllers: [...controllers],
+  providers: [...guards, ...services, ...repositories, ...adapters],
 })
 export class AppModule {}

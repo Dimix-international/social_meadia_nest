@@ -28,6 +28,7 @@ import { AuthUserGuard } from '../guards/auth-user.guard';
 import { Cookies } from '../decorators/params/cookies.decorator';
 import { UserAgent } from '../decorators/params/user-agent.decorator';
 import { SkipThrottle } from '@nestjs/throttler';
+import { AcceptNewPassword } from '../models/auth/AcceptNewPassword';
 
 @Controller('auth')
 export class AuthRouterController {
@@ -53,7 +54,9 @@ export class AuthRouterController {
       loginOrEmail,
     );
 
-    if (!user) throw new UnauthorizedException();
+    if (!user) {
+      throw new UnauthorizedException();
+    }
 
     const { id } = user;
     const isRightData = await this.authService.checkCredentials(
@@ -304,5 +307,83 @@ export class AuthRouterController {
       login,
       userId,
     };
+  }
+
+  @Post('/password-recovery')
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
+  async recoveryPassword(@Body('email') data: UserResendingInput) {
+    const { email } = data;
+    const user = await this.usersQueryRepository.getUserByEmailLogin(email);
+
+    if (!user) {
+      throw new BadRequestException([
+        {
+          field: 'email',
+          message: 'Email not found!',
+        },
+      ]);
+    }
+
+    const code = await this.userService.createNewActivatedCode(user.id);
+
+    if (!code) {
+      throw new BadRequestException([
+        {
+          field: 'code',
+          message: 'Something error!',
+        },
+      ]);
+    }
+
+    try {
+      await this.emailsService.recoveryPassword(email, code);
+    } catch {
+      throw new BadRequestException([
+        {
+          field: 'code',
+          message: 'Something error!',
+        },
+      ]);
+    }
+  }
+
+  @Post('/new-password')
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
+  async acceptNewPassword(@Body() data: AcceptNewPassword) {
+    const { newPassword, recoveryCode } = data;
+    const user = await this.usersQueryRepository.getUserByActivatedCode(
+      recoveryCode,
+    );
+
+    if (!user) {
+      throw new BadRequestException([
+        {
+          field: 'code',
+          message: 'User not found!',
+        },
+      ]);
+    }
+    if (user.isActivated) {
+      throw new BadRequestException([
+        {
+          field: 'code',
+          message: 'Code was activated!',
+        },
+      ]);
+    }
+
+    const isUpdated = await this.userService.setNewPassword(
+      user.id,
+      newPassword,
+    );
+
+    if (!isUpdated) {
+      throw new BadRequestException([
+        {
+          field: 'password',
+          message: 'Something error!',
+        },
+      ]);
+    }
   }
 }

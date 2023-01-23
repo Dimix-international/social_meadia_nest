@@ -1,19 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { PostModel } from './schema/schemaType';
+import { InjectModel } from '@nestjs/mongoose';
+import { Post, PostDocument } from './schema/post-nest.schema';
+import { Model } from 'mongoose';
+import { DeleteResult, UpdateResult } from 'mongodb';
 
 @Injectable()
 export class PostsRepository {
+  constructor(
+    @InjectModel(Post.name) private readonly postModel: Model<PostDocument>,
+  ) {}
   async createPost(data: CreatePostType) {
-    const post = await PostModel.create(data);
-    return post;
+    // const newPost = new this.postModel(data);
+    // await newPost.save();
+    return await this.postModel.create(data);
   }
-  async deletePostById(id: string) {
-    const deletedPost = await PostModel.deleteOne({ id });
-    return deletedPost;
+  async deletePostById(id: string): Promise<DeleteResult> {
+    return this.postModel.deleteOne({ id });
   }
-  async updatePostById(id: string, data: UpdatePostType) {
-    const updatedPost = await PostModel.updateOne({ id }, { ...data });
-    return updatedPost;
+  async updatePostById(
+    id: string,
+    data: UpdatePostType,
+  ): Promise<UpdateResult> {
+    return this.postModel.updateOne({ id }, { ...data });
   }
 }
 

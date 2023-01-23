@@ -1,9 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { getPagesCount, getSkip } from '../helpers/helpers';
 import { UserModel } from './schema/user-schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { User, UserDocument } from './schema/user-nest.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class UsersQueryRepository {
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+  ) {}
+
   async getUsers(
     pageNumber: number,
     pageSize: number,
@@ -12,7 +19,7 @@ export class UsersQueryRepository {
     searchLoginTerm: string | null,
     searchEmailTerm: string | null,
   ): Promise<UsersType> {
-    const aggregateResult = await UserModel.aggregate([
+    const aggregateResult = await this.userModel.aggregate([
       {
         $facet: {
           items: [
@@ -104,23 +111,26 @@ export class UsersQueryRepository {
         },
       },
     );*/
-    const user = await UserModel.findOne({ id }).select(
-      '-id -password -__v -activationLink -isActivated -countSendEmailsActivated',
-    );
-    return user;
+    return this.userModel
+      .findOne({ id })
+      .select(
+        '-id -password -activationLink -isActivated -countSendEmailsActivated',
+      )
+      .lean();
   }
   async getUserByEmailLogin(emailOrLogin: string): Promise<UserType | null> {
-    const user = await UserModel.findOne({
-      $or: [{ login: emailOrLogin }, { email: emailOrLogin }],
-    }).select('-id -__v');
-    return user;
+    return this.userModel
+      .findOne({
+        $or: [{ login: emailOrLogin }, { email: emailOrLogin }],
+      })
+      .select('-id ')
+      .lean();
   }
 
   async getUserByActivatedCode(
     activationCode: string,
   ): Promise<UserType | null> {
-    const user = await UserModel.findOne({ activationCode });
-    return user;
+    return this.userModel.findOne({ activationCode }).lean();
   }
 }
 

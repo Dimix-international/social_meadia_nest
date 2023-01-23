@@ -3,13 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { v4 as uuidv4 } from 'uuid';
 import { emailFormat, HASH_SALT_ROUNDS } from '../constants/general/general';
-import {
-  IsNotEmpty,
-  MaxLength,
-  MinLength,
-  Matches,
-  Validate,
-} from 'class-validator';
+import { IsNotEmpty, MaxLength, MinLength, Matches } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { UserExistsByLoginValidator } from '../validators/UserExistsByLoginValidator';
 
@@ -28,7 +22,7 @@ export class UserCreateInput {
   password: string;
 
   @IsNotEmpty({ message: 'This field is required!' })
-  //@Matches(emailFormat, { message: 'Incorrect email format!' })
+  @Matches(emailFormat, { message: 'Incorrect email format!' })
   // @Validate(UserExistsByLoginValidator, { message: 'Email is exist!' })
   email: string;
 }
@@ -67,6 +61,14 @@ export class UserService {
 
   async activateUser(userId: string): Promise<boolean> {
     const { matchedCount } = await this.usersRepository.activateUser(userId);
+    return !!matchedCount;
+  }
+
+  async setNewPassword(userId: string, newPassword: string): Promise<boolean> {
+    const { matchedCount } = await this.usersRepository.setNewPassword(
+      userId,
+      newPassword,
+    );
     return !!matchedCount;
   }
 

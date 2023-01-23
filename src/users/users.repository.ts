@@ -1,36 +1,52 @@
 import { Injectable } from '@nestjs/common';
-import { UserModel } from './schema/user-schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { User, UserDocument } from './schema/user-nest.schema';
+import { Model } from 'mongoose';
+import { DeleteResult, UpdateResult } from 'mongodb';
 
 @Injectable()
 export class UsersRepository {
-  async deleteUser(id: string) {
-    const deletedUser = await UserModel.deleteOne({ id });
-    return deletedUser;
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+  ) {}
+
+  async deleteUser(id: string): Promise<DeleteResult> {
+    return this.userModel.deleteOne({ id });
   }
   async createUser(data: CreateUserType) {
-    const createdUser = await UserModel.create(data);
-    return createdUser;
+    return this.userModel.create(data);
   }
-  async activateUser(userId: string) {
-    const updatedUser = await UserModel.updateOne(
+  async activateUser(userId: string): Promise<UpdateResult> {
+    return this.userModel.updateOne({ id: userId }, { isActivated: true });
+  }
+  async setNewPassword(
+    userId: string,
+    newPassword: string,
+  ): Promise<UpdateResult> {
+    return this.userModel.updateOne(
       { id: userId },
-      { isActivated: true },
+      {
+        password: newPassword,
+        isActivated: true,
+      },
     );
-    return updatedUser;
   }
-  async updateCountSendEmails(userId: string) {
-    const updatedUser = await UserModel.updateOne(
+
+  async updateCountSendEmails(userId: string): Promise<UpdateResult> {
+    return this.userModel.updateOne(
       { id: userId },
       { $inc: { countSendEmailsActivated: 1 } },
     );
-    return updatedUser;
   }
-  async createNewActivatedCode(userId: string, code: string) {
-    const updatedUser = await UserModel.updateOne(
+
+  async createNewActivatedCode(
+    userId: string,
+    code: string,
+  ): Promise<UpdateResult> {
+    return this.userModel.updateOne(
       { id: userId },
-      { activationCode: code },
+      { activationCode: code, isActivated: false },
     );
-    return updatedUser;
   }
 }
 

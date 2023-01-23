@@ -1,31 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { AuthModel } from './schema/schema-type';
+import { InjectModel } from '@nestjs/mongoose';
+import { Auth, AuthDocument } from './schema/auth-nest.schema';
+import { Model } from 'mongoose';
+import { DeleteResult } from 'mongodb';
 
 @Injectable()
 export class AuthRepository {
+  constructor(
+    @InjectModel(Auth.name) private readonly authModel: Model<AuthDocument>,
+  ) {}
+
   async saveDevice(deviceData: DeviceDataType) {
-    const device = await AuthModel.create(deviceData);
-    return device;
+    return this.authModel.create(deviceData);
   }
 
   async updateDeviceToken(deviceId: string, lastActiveDate: string) {
-    const updatedDeviceToken = await AuthModel.updateOne(
-      { deviceId },
-      { lastActiveDate },
-    );
-    return updatedDeviceToken;
+    await AuthModel.updateOne({ deviceId }, { lastActiveDate });
   }
 
-  async terminateDevice(deviceId: string) {
-    const terminatedDevice = await AuthModel.deleteOne({ deviceId });
-    return terminatedDevice;
+  async terminateDevice(deviceId: string): Promise<DeleteResult> {
+    return this.authModel.deleteOne({ deviceId });
   }
-  async terminateAllOtherDevices(userId: string, currentDeviceId: string) {
-    const terminatedDevices = await AuthModel.deleteMany({
+  async terminateAllOtherDevices(
+    userId: string,
+    currentDeviceId: string,
+  ): Promise<DeleteResult> {
+    return this.authModel.deleteMany({
       userId: userId,
       deviceId: { $ne: currentDeviceId },
     });
-    return terminatedDevices;
   }
 }
 

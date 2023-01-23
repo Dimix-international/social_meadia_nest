@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { getPagesCount, getSkip } from '../helpers/helpers';
-import { BlogModel } from './schema/blog-schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Blog, BlogDocument } from './schema/blog-nest.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class BlogsQueryRepository {
+  constructor(
+    @InjectModel(Blog.name) private readonly blogModel: Model<BlogDocument>,
+  ) {}
+
   async getBlogs(
     searchNameTerm: string | null,
     pageNumber: number,
@@ -67,26 +73,28 @@ export class BlogsQueryRepository {
       items: items as BlogType[],
     };*/
 
-    console.log('blogs');
     const [blogs, totalCount] = await Promise.all([
-      BlogModel.find({
-        $match: {
-          name: searchNameTerm
-            ? { $regex: new RegExp(searchNameTerm, 'i') }
-            : { $ne: null },
-        },
-      })
+      this.blogModel
+        .find({
+          $match: {
+            name: searchNameTerm
+              ? { $regex: new RegExp(searchNameTerm, 'i') }
+              : { $ne: null },
+          },
+        })
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(getSkip(pageNumber, pageSize))
-        .select('-_id -__v -updatedAt')
+        .select('-_id -updatedAt')
         .lean(),
-      BlogModel.find({
-        $match: {
-          name: searchNameTerm
-            ? { $regex: new RegExp(searchNameTerm, 'i') }
-            : { $ne: null },
-        },
-      }).countDocuments(),
+      this.blogModel
+        .find({
+          $match: {
+            name: searchNameTerm
+              ? { $regex: new RegExp(searchNameTerm, 'i') }
+              : { $ne: null },
+          },
+        })
+        .countDocuments(),
     ]);
 
     return {
@@ -94,13 +102,12 @@ export class BlogsQueryRepository {
       page: pageNumber,
       pageSize: pageSize,
       totalCount: totalCount || 0,
-      items: [],
+      items: blogs,
     };
   }
 
   async getBlogById(id: string): Promise<BlogType | null> {
-    const blog = await BlogModel.findOne({ id }).select('-_id -__v');
-    return blog;
+    return this.blogModel.findOne({ id }).select('-_id -updatedAt').lean();
   }
 }
 

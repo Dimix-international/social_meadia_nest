@@ -49,6 +49,7 @@ export class PostsService {
     if (blog) {
       const { name } = blog;
       const { content, blogId, shortDescription, title } = data;
+      // const newPost = new Post(title, shortDescription, content, blogId, name);
       const newPost = new Post(title, shortDescription, content, blogId, name);
       await this.postsRepository.createPost(newPost);
       return {

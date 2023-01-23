@@ -45,7 +45,6 @@ export class SecurityControllerController {
   ) {
     const tokenInfo = await this.authService.checkCorrectToken(refreshToken);
 
-    await this.deviceService.checkExistDevice(removeDevice);
     const isCorrectDevice = this.authService.checkCorrectDeviceInfo(
       tokenInfo,
       ip,

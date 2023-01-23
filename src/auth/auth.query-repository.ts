@@ -1,17 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { AuthModel } from './schema/schema-type';
+import { InjectModel } from '@nestjs/mongoose';
+import { Auth, AuthDocument } from './schema/auth-nest.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class AuthQueryRepository {
+  constructor(
+    @InjectModel(Auth.name) private readonly authModel: Model<AuthDocument>,
+  ) {}
+
   async getDevice(deviceId: string): Promise<GetDeviceType | null> {
-    const device = await AuthModel.findOne({ deviceId }).select('-_id -__v ');
-    return device;
+    return this.authModel.findOne({ deviceId }).select('-_id ').lean();
   }
   async getDevices(userId): Promise<GetDeviceType[]> {
-    const devices = await AuthModel.find({ userId })
-      .select('-_id -__v ')
-      .lean();
-    return devices;
+    return this.authModel.find({ userId }).select('-_id ').lean();
   }
 }
 

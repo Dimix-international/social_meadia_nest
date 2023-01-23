@@ -39,11 +39,7 @@ export class AuthService {
   async saveDevice(deviceData: SaveDeviceDataType): Promise<JWTType> {
     const { userId, deviceTitle, ipAddress } = deviceData;
 
-    console.log('deviceTitle', deviceTitle);
-
     const device = new AuthDeviceDTO(userId, deviceTitle, ipAddress);
-
-    console.log('device', device);
 
     const { accessToken, refreshToken } = await this.jwtService.createJWT({
       deviceId: device.deviceId,

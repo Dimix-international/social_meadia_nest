@@ -1,26 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { BlogModel } from './schema/blog-schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Blog, BlogDocument } from './schema/blog-nest.schema';
+import { Model } from 'mongoose';
+import { DeleteResult, UpdateResult } from 'mongodb';
 
 @Injectable()
 export class BlogsRepository {
+  constructor(
+    @InjectModel(Blog.name) private readonly blogModel: Model<BlogDocument>,
+  ) {}
   async createBlog(blog: BlogCreateType) {
     // return await BlogsCollection.insertOne(blog);
-    return await BlogModel.create(blog);
+    return this.blogModel.create(blog);
   }
-  async deleteBlogById(id: string) {
+  async deleteBlogById(id: string): Promise<DeleteResult> {
     //return await BlogsCollection.deleteOne({ id });
-    const deletedBlog = await BlogModel.deleteOne({ id });
-    return deletedBlog;
+    return this.blogModel.deleteOne({ id });
   }
-  async updateBlogById(id: string, data: BlogUpdateType) {
+  async updateBlogById(
+    id: string,
+    data: BlogUpdateType,
+  ): Promise<UpdateResult> {
     /*    return await BlogsCollection.updateOne(
       { id },
       {
         $set: { ...data },
       },
     );*/
-    const updatedBlog = await BlogModel.updateOne({ id }, { ...data });
-    return updatedBlog;
+    return this.blogModel.updateOne({ id }, { ...data });
   }
 }
 

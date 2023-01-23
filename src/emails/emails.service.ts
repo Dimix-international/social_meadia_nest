@@ -19,4 +19,16 @@ export class EmailsService {
         `;
     await this.emailAdapter.sendEmail(email, message, 'Registration');
   }
+
+  async recoveryPassword(email: string, activationCode: string) {
+    const message = `
+            <h1>Password recovery</h1>
+            <p>To finish password recovery please follow the link below:
+                <a href='${
+                  process.env.API_URL || 'http://localhost:5000/'
+                }auth/password-recovery?code=${activationCode}'>recovery password</a>
+            </p>
+        `;
+    await this.emailAdapter.sendEmail(email, message, 'Recovery password');
+  }
 }

@@ -8,25 +8,25 @@ const client = new MongoClient(
 );
 const db = client.db(); //имя db
 
-/*export const BlogsCollection = db.collection<BlogType>('blogs');
+export const BlogsCollection = db.collection<BlogType>('blogs');
 export const PostsCollection = db.collection<PostType>('posts');
 export const UsersCollection = db.collection<UserType>('users');
 export const AuthCollection = db.collection<AuthType>('auth');
-export const CommentsCollection = db.collection<CommentType>('comments');*/
+export const CommentsCollection = db.collection<CommentType>('comments');
 
 export async function runDb() {
   try {
-    await client.connect();
+    //  await client.connect();
+    console.log(settings.MONGO_URI);
     await mongoose.connect(`${settings.MONGO_URI}/${settings.MONGO_DBName}`);
-    await client.db('social-info').command({ ping: 1 });
+    // await client.db('social-info').command({ ping: 1 });
     console.log('Connected successfully to mongo server!');
   } catch (e) {
     console.log(e);
-    await client.close();
+    // await client.close();
     await mongoose.disconnect();
   }
 }
-/*
 
 type AuthType = {
   userId: string;
@@ -73,4 +73,3 @@ type CommentType = {
   userLogin: string;
   createdAt: Date;
 };
-*/

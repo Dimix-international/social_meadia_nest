@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { getPagesCount, getSkip } from '../helpers/helpers';
-import { PostModel } from './schema/schemaType';
+import { InjectModel } from '@nestjs/mongoose';
+import { Post, PostDocument } from './schema/post-nest.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class PostsQueryRepository {
+  constructor(
+    @InjectModel(Post.name) private readonly postModel: Model<PostDocument>,
+  ) {}
+
   async getPosts(
     pageNumber: number,
     pageSize: number,
@@ -20,12 +26,13 @@ export class PostsQueryRepository {
     ]);*/
 
     const [result, totalCount] = await Promise.all([
-      PostModel.find({})
+      this.postModel
+        .find({})
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(getSkip(pageNumber, pageSize))
-        .select('-_id -__v -updatedAt')
+        .select('-_id -updatedAt')
         .lean(),
-      PostModel.find({}).countDocuments(),
+      this.postModel.find({}).countDocuments(),
     ]);
 
     return {
@@ -37,8 +44,7 @@ export class PostsQueryRepository {
     };
   }
   async getPostById(id: string): Promise<PostType | null> {
-    const post = await PostModel.findOne({ id }).select('-_id -__v -updatedAt');
-    return post;
+    return this.postModel.findOne({ id }).select('-_id -updatedAt').lean();
   }
   async getPostsForBlog(
     pageNumber: number,
@@ -92,20 +98,23 @@ export class PostsQueryRepository {
     const { totalCount } = count[0] || {};*/
 
     const [items, totalCount] = await Promise.all([
-      PostModel.find({
-        $match: {
-          blogId: blogId,
-        },
-      })
+      this.postModel
+        .find({
+          $match: {
+            blogId: blogId,
+          },
+        })
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(getSkip(pageNumber, pageSize))
-        .select('-_id -__v -updatedAt')
+        .select('-_id -updatedAt')
         .lean(),
-      PostModel.find({
-        $match: {
-          blogId: blogId,
-        },
-      }).countDocuments(),
+      this.postModel
+        .find({
+          $match: {
+            blogId: blogId,
+          },
+        })
+        .countDocuments(),
     ]);
 
     return {
