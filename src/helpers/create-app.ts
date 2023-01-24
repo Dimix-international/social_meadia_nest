@@ -9,6 +9,7 @@ import { HttpExceptionFilter } from '../exception.filter';
 export const createApp = (app: INestApplication) => {
   app.use(cookieParser());
   app.enableCors(); //убираем cors
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true, //делай трансофрацию по типам
