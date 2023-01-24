@@ -22,14 +22,14 @@ export class UserCreateInput {
   password: string;
 
   @IsNotEmpty({ message: 'This field is required!' })
-  //@Matches(emailFormat, { message: 'Incorrect email format!' })
+  @Matches(emailFormat, { message: 'Incorrect email format!' })
   // @Validate(UserExistsByLoginValidator, { message: 'Email is exist!' })
   email: string;
 }
 
 export class UserResendingInput {
   @IsNotEmpty({ message: 'This field is required!' })
-  //  @Matches(emailFormat, { message: 'Incorrect email format!' })
+  @Matches(emailFormat, { message: 'Incorrect email format!' })
   email: string;
 }
 

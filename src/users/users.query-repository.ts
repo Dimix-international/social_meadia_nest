@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { getPagesCount, getSkip } from '../helpers/helpers';
-import { UserModel } from './schema/user-schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schema/user-nest.schema';
 import { Model } from 'mongoose';
@@ -114,7 +113,7 @@ export class UsersQueryRepository {
     return this.userModel
       .findOne({ id })
       .select(
-        '-id -password -activationLink -isActivated -countSendEmailsActivated',
+        '-_id -password -activationLink -isActivated -countSendEmailsActivated',
       )
       .lean();
   }
