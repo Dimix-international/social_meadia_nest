@@ -3,9 +3,8 @@ import { settings } from './settings';
 import mongoose from 'mongoose';
 
 //settings.MONGO_URI
-const client = new MongoClient(
-  `${settings.MONGO_URI}/${settings.MONGO_DBName}`,
-);
+const mongoUri = settings.MONGO_URI;
+const client = new MongoClient(mongoUri);
 const db = client.db(); //имя db
 
 export const BlogsCollection = db.collection<BlogType>('blogs');
@@ -18,7 +17,7 @@ export async function runDb() {
   try {
     //  await client.connect();
     console.log(settings.MONGO_URI);
-    await mongoose.connect(`${settings.MONGO_URI}/${settings.MONGO_DBName}`);
+    await mongoose.connect(mongoUri);
     // await client.db('social-info').command({ ping: 1 });
     console.log('Connected successfully to mongo server!');
   } catch (e) {

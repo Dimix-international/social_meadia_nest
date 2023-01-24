@@ -81,16 +81,16 @@ const repositories = [
 const adapters = [EmailAdapter];
 
 const models = [
+  { name: User.name, schema: UserSchema },
   { name: Post.name, schema: PostSchema },
   { name: Blog.name, schema: BlogSchema },
   { name: Auth.name, schema: AuthSchema },
   { name: Comment.name, schema: CommentSchema },
-  { name: User.name, schema: UserSchema },
 ];
 
 @Module({
   imports: [
-    MongooseModule.forRoot(`${settings.MONGO_URI}/${settings.MONGO_DBName}`),
+    MongooseModule.forRoot(settings.MONGO_URI),
     MongooseModule.forFeature(models),
     ThrottlerModule.forRoot({
       ttl: 10,

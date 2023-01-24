@@ -9,6 +9,6 @@ export class TestingDataController {
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
   @Delete('/all-data')
   async deleteAllData() {
-    await this.testingDataRepository.deleteAllData();
+    return this.testingDataRepository.deleteAllData();
   }
 }
