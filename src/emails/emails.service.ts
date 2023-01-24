@@ -26,7 +26,7 @@ export class EmailsService {
             <p>To finish password recovery please follow the link below:
                 <a href='${
                   process.env.API_URL || 'http://localhost:5000/'
-                }auth/password-recovery?recoveryCode=${activationCode}'>recovery password</a>
+                }password-recovery?recoveryCode=${activationCode}'>recovery password</a>
             </p>
         `;
     await this.emailAdapter.sendEmail(email, message, 'Recovery password');

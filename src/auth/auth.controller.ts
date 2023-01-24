@@ -323,9 +323,8 @@ export class AuthRouterController {
         },
       ]);
     }
-    console.log('user', user);
+
     const code = await this.userService.createNewActivatedCode(user.id);
-    console.log('code', code);
 
     if (!code) {
       throw new BadRequestException([

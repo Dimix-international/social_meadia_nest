@@ -43,8 +43,6 @@ export class UsersRepository {
     userId: string,
     code: string,
   ): Promise<UpdateResult> {
-    console.log('userId', userId);
-    console.log('code', code);
     return this.userModel.updateOne(
       { id: userId },
       { activationCode: code, isActivated: false },
