@@ -123,7 +123,7 @@ export class UsersQueryRepository {
       .findOne({
         $or: [{ login: emailOrLogin }, { email: emailOrLogin }],
       })
-      .select('-id ')
+      .select('-_id ')
       .lean();
   }
 
