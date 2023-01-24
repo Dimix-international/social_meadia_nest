@@ -311,7 +311,7 @@ export class AuthRouterController {
 
   @Post('/password-recovery')
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  async recoveryPassword(@Body('email') data: UserResendingInput) {
+  async recoveryPassword(@Body() data: UserResendingInput) {
     const { email } = data;
     const user = await this.usersQueryRepository.getUserByEmailLogin(email);
 
@@ -358,8 +358,8 @@ export class AuthRouterController {
     if (!user) {
       throw new BadRequestException([
         {
-          field: 'code',
-          message: 'User not found!',
+          field: 'recoveryCode',
+          message: 'RecoveryCode not found!',
         },
       ]);
     }
