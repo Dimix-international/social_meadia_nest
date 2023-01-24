@@ -15,6 +15,7 @@ import {
 import { UsersQueryRepository } from '../users/users.query-repository';
 import {
   UserCreateInput,
+  UserRecoveryPassportInput,
   UserResendingInput,
   UserService,
 } from '../users/users.service';
@@ -349,7 +350,7 @@ export class AuthRouterController {
 
   @Post('/new-password')
   @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
-  async acceptNewPassword(@Body() data: AcceptNewPassword) {
+  async acceptNewPassword(@Body() data: UserRecoveryPassportInput) {
     const { newPassword, recoveryCode } = data;
     const user = await this.usersQueryRepository.getUserByActivatedCode(
       recoveryCode,

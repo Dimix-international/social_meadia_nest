@@ -33,6 +33,16 @@ export class UserResendingInput {
   email: string;
 }
 
+export class UserRecoveryPassportInput {
+  @IsNotEmpty({ message: 'This field is required!' })
+  @MinLength(6, { message: 'Min 6 symbols!' })
+  @MaxLength(20, { message: 'Max 20 symbols!' })
+  newPassword: string;
+
+  @IsNotEmpty({ message: 'This field is required!' })
+  recoveryCode: string;
+}
+
 @Injectable()
 export class UserService {
   constructor(protected usersRepository: UsersRepository) {}
