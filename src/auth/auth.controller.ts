@@ -316,14 +316,7 @@ export class AuthRouterController {
     const { email } = data;
     const user = await this.usersQueryRepository.getUserByEmailLogin(email);
 
-    if (!user) {
-      throw new BadRequestException([
-        {
-          field: 'email',
-          message: 'Email not found!',
-        },
-      ]);
-    }
+    if (!user) return;
 
     const code = await this.userService.createNewActivatedCode(user.id);
 
