@@ -54,7 +54,6 @@ export class UserService {
 
   async createUser(login: string, password: string, email: string) {
     const hashPassword = await this._generateHash(password);
-
     const newUser = new User(login, hashPassword, email);
 
     await this.usersRepository.createUser(newUser);
