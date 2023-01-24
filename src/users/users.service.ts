@@ -74,9 +74,10 @@ export class UserService {
   }
 
   async setNewPassword(userId: string, newPassword: string): Promise<boolean> {
+    const hashPassword = await this._generateHash(newPassword);
     const { matchedCount } = await this.usersRepository.setNewPassword(
       userId,
-      newPassword,
+      hashPassword,
     );
     return !!matchedCount;
   }
