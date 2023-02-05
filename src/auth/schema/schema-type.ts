@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+/*import mongoose from 'mongoose';
 import { AuthSchemaType } from './auth-schema';
 
 export const AuthSchema = new mongoose.Schema<AuthSchemaType>({
@@ -24,4 +24,4 @@ export const AuthSchema = new mongoose.Schema<AuthSchemaType>({
   },
 });
 
-export const AuthModel = mongoose.model<AuthSchemaType>('auth', AuthSchema);
+export const AuthModel = mongoose.model<AuthSchemaType>('auth', AuthSchema);*/

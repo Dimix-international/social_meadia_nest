@@ -22,6 +22,8 @@ import {
 } from './comments.service';
 import { AuthUserGuard } from '../guards/auth-user.guard';
 import { SkipThrottle } from '@nestjs/throttler';
+import { CommentViewModelType } from '../models/comments/CommentsViewModel';
+import { UserLikesQueryRepository } from '../userLikes/userLikes.query-repository';
 
 @SkipThrottle()
 @Controller('comments')
@@ -30,16 +32,33 @@ export class CommentsController {
     protected usersQueryRepository: UsersQueryRepository,
     protected commentsQueryRepository: CommentsQueryRepository,
     protected commentsService: CommentsService,
+    protected userLikesQueryRepository: UserLikesQueryRepository,
   ) {}
 
   @Get('/:id')
-  async getComments(@Param('id') id: string) {
-    const comment = await this.commentsQueryRepository.getCommentById(id);
+  async getComments(@Param('id') id: string): Promise<CommentViewModelType> {
+    const [comment, userLikesInfo] = await Promise.all([
+      await this.commentsQueryRepository.getCommentById(id),
+      await this.userLikesQueryRepository.getLikesInfo(id),
+    ]);
 
     if (!comment) {
       throw new NotFoundException();
     }
-    return comment;
+
+    const { likeStatus, userLogin, userId, ...restDataComment } = comment;
+    return {
+      ...restDataComment,
+      commentatorInfo: {
+        userId,
+        userLogin,
+      },
+      likesInfo: {
+        likesCount: userLikesInfo.likesCount,
+        dislikesCount: userLikesInfo.dislikesCount,
+        myStatus: likeStatus,
+      },
+    };
   }
 
   @UseGuards(AuthUserGuard)

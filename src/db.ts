@@ -1,3 +1,4 @@
+/*
 import { MongoClient } from 'mongodb';
 import { settings } from './settings';
 import mongoose from 'mongoose';
@@ -72,3 +73,4 @@ type CommentType = {
   userLogin: string;
   createdAt: Date;
 };
+*/
