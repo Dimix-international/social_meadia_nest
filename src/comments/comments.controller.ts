@@ -14,7 +14,7 @@ import {
 import { Request } from 'express';
 import { UsersQueryRepository } from '../users/users.query-repository';
 import { CommentsQueryRepository } from './comments.query-repository';
-import { HTTP_STATUSES } from '../constants/general/general';
+import { HTTP_STATUSES, LIKE_STATUSES } from '../constants/general/general';
 import {
   CommentCreateInput,
   CommentsService,
@@ -36,11 +36,16 @@ export class CommentsController {
   ) {}
 
   @Get('/:id')
-  async getComments(@Param('id') id: string): Promise<CommentViewModelType> {
+  async getComment(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<CommentViewModelType> {
     const [comment, userLikesInfo] = await Promise.all([
       await this.commentsQueryRepository.getCommentById(id),
       await this.userLikesQueryRepository.getLikesInfo(id),
     ]);
+
+    const { id: authUserId } = req.user || {};
 
     if (!comment) {
       throw new NotFoundException();
@@ -56,7 +61,7 @@ export class CommentsController {
       likesInfo: {
         likesCount: userLikesInfo.likesCount,
         dislikesCount: userLikesInfo.dislikesCount,
-        myStatus: likeStatus,
+        myStatus: authUserId ? likeStatus : LIKE_STATUSES.NONE,
       },
     };
   }

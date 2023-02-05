@@ -21,7 +21,7 @@ export class CommentCreateInput {
 }
 
 export class UpdateLikeStatus {
-  @Matches(new RegExp(`^${Object.values(LIKE_STATUSES).join('|')}$`), {
+  @Matches(new RegExp(`^${Object.values(LIKE_STATUSES).join('$|')}`), {
     message: 'Incorrect format likeStatus!',
   })
   likeStatus: LIKE_STATUSES;
