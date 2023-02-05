@@ -4,6 +4,12 @@ import { PostCreateModel } from '../models/posts/PostsCreateModel';
 import { Injectable } from '@nestjs/common';
 import { Post } from './dto';
 import { IsNotEmpty, MaxLength } from 'class-validator';
+import { CommentsQueryRepository } from '../comments/comments.query-repository';
+import {
+  LikeInfoType,
+  UserLikesQueryRepository,
+} from '../userLikes/userLikes.query-repository';
+import { CommentsViewModel } from '../models/comments/CommentsViewModel';
 
 export class PostCreateInput {
   @IsNotEmpty({ message: 'This field is required!' })
@@ -41,6 +47,8 @@ export class PostsService {
   constructor(
     protected blogsQueryRepository: BlogsQueryRepository,
     protected postsRepository: PostsRepository,
+    protected commentsQueryRepository: CommentsQueryRepository,
+    protected userLikesQueryRepository: UserLikesQueryRepository,
   ) {}
 
   async createPost(data: PostCreateModel): Promise<CreatePostType | null> {
@@ -75,6 +83,48 @@ export class PostsService {
     );
     return !!matchedCount;
   }
+  async getCommentsForPost(
+    data: CommentForPostType,
+  ): Promise<CommentsViewModel> {
+    const commentData = await this.commentsQueryRepository.getComments(data);
+
+    const { items, ...restCommentData } = commentData;
+
+    const promises = [];
+
+    items.forEach((item) => {
+      promises.push(this.userLikesQueryRepository.getLikesInfo(item.id));
+    });
+
+    const resultLikesInfo: LikeInfoType[] = await Promise.all(promises);
+
+    const getLikes = (itemId) => {
+      const document = resultLikesInfo.find(
+        (item) => item.documentId === itemId,
+      );
+      return {
+        likesCount: document?.likesCount || 0,
+        dislikesCount: document?.dislikesCount || 0,
+      };
+    };
+
+    return {
+      ...restCommentData,
+      items: items.map((item) => ({
+        id: item.id,
+        content: item.content,
+        commentatorInfo: {
+          userId: item.userId,
+          userLogin: item.userLogin,
+        },
+        createdAt: item.createdAt,
+        likesInfo: {
+          ...getLikes(item.id),
+          myStatus: item.likeStatus,
+        },
+      })),
+    };
+  }
 }
 
 export type CreatePostType = {
@@ -92,4 +142,12 @@ export type UpdatePostType = {
   shortDescription: string;
   content: string;
   blogId: string;
+};
+
+export type CommentForPostType = {
+  postId: string;
+  pageNumber: number;
+  pageSize: number;
+  sortBy: string;
+  sortDirection: 'asc' | 'desc';
 };

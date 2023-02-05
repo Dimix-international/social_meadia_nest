@@ -2,21 +2,21 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { LIKE_STATUSES } from '../../constants/general/general';
 
-export type CommentDocument = HydratedDocument<Comment>;
+export type UserLikesDocument = HydratedDocument<UserLikes>;
 
 @Schema({ versionKey: false, timestamps: true })
-export class Comment {
+export class UserLikes {
   @Prop({ type: String, required: true, unique: true })
   id: string;
 
   @Prop({ type: String, required: true })
-  userId: string;
+  documentId: string;
 
   @Prop({ type: String, required: true })
-  userLogin: string;
+  senderId: string;
 
   @Prop({ type: String, required: true })
-  content: string;
+  senderLogin: string;
 
   @Prop({ type: String, required: true, default: LIKE_STATUSES.NONE })
   likeStatus: LIKE_STATUSES;
@@ -25,4 +25,4 @@ export class Comment {
   createdAt: Date;
 }
 
-export const CommentSchema = SchemaFactory.createForClass(Comment);
+export const UserLikesSchema = SchemaFactory.createForClass(UserLikes);

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CommentModel } from './schema/comment-schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentDocument } from './schema/comment-nest.schema';
 import { Model } from 'mongoose';
 import { DeleteResult, UpdateResult } from 'mongodb';
+import { LIKE_STATUSES } from '../constants/general/general';
 
 @Injectable()
 export class CommentsRepository {
@@ -18,8 +18,11 @@ export class CommentsRepository {
   async deleteComment(id: string): Promise<DeleteResult> {
     return this.commentModel.deleteOne({ id });
   }
-  async updateComment(id: string, content: string): Promise<UpdateResult> {
-    return this.commentModel.updateOne({ id }, { content });
+  async updateComment(
+    id: string,
+    data: UpdateCommentType,
+  ): Promise<UpdateResult> {
+    return this.commentModel.updateOne({ id }, { ...data });
   }
 }
 
@@ -30,4 +33,9 @@ type CreateCommentType = {
   userId: string;
   userLogin: string;
   createdAt: Date;
+};
+
+type UpdateCommentType = {
+  content?: string;
+  likeStatus?: LIKE_STATUSES;
 };

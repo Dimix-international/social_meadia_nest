@@ -47,7 +47,6 @@ export class PostsController {
       sortBy = 'createdAt',
       sortDirection = 'desc',
     } = data;
-
     return await this.postsQueryRepository.getPosts(
       transformInNumber(pageNumber, 1),
       transformInNumber(pageSize, 10),
@@ -72,7 +71,12 @@ export class PostsController {
     const createdPost = await this.postsService.createPost(data);
 
     if (!createdPost) {
-      throw new BadRequestException();
+      throw new BadRequestException([
+        {
+          field: 'blogId',
+          message: "Blog doesn't exist!",
+        },
+      ]);
     }
 
     return createdPost;
@@ -116,12 +120,18 @@ export class PostsController {
     }
 
     const { id: userId, login: userLogin } = req.user;
-    return await this.commentsService.createComment(
+    const comment = await this.commentsService.createComment(
       content,
       userId,
       userLogin,
       postId,
     );
+
+    if (!comment) {
+      throw new BadRequestException();
+    }
+
+    return comment;
   }
 
   @Get('/:id/comments')
@@ -142,12 +152,12 @@ export class PostsController {
       throw new NotFoundException();
     }
 
-    return await this.commentsQueryRepository.getComments(
+    return await this.postsService.getCommentsForPost({
       postId,
-      transformInNumber(pageNumber, 1),
-      transformInNumber(pageSize, 10),
+      pageNumber: transformInNumber(pageNumber, 1),
+      pageSize: transformInNumber(pageSize, 10),
       sortBy,
       sortDirection,
-    );
+    });
   }
 }

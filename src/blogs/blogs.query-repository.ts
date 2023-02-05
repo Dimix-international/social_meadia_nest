@@ -84,6 +84,7 @@ export class BlogsQueryRepository {
         })
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(getSkip(pageNumber, pageSize))
+        .limit(pageSize)
         .select('-_id -updatedAt')
         .lean(),
       this.blogModel

@@ -29,7 +29,6 @@ import { AuthUserGuard } from '../guards/auth-user.guard';
 import { Cookies } from '../decorators/params/cookies.decorator';
 import { UserAgent } from '../decorators/params/user-agent.decorator';
 import { SkipThrottle } from '@nestjs/throttler';
-import { AcceptNewPassword } from '../models/auth/AcceptNewPassword';
 
 @Controller('auth')
 export class AuthRouterController {

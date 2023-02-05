@@ -9,6 +9,10 @@ import {
   CommentDocument,
 } from '../comments/schema/comment-nest.schema';
 import { Auth, AuthDocument } from '../auth/schema/auth-nest.schema';
+import {
+  UserLikes,
+  UserLikesDocument,
+} from '../userLikes/schema/userLike.schema';
 
 @Injectable()
 export class TestingDataRepository {
@@ -19,6 +23,8 @@ export class TestingDataRepository {
     @InjectModel(Comment.name)
     private readonly commentModel: Model<CommentDocument>,
     @InjectModel(Auth.name) private readonly authModel: Model<AuthDocument>,
+    @InjectModel(UserLikes.name)
+    private readonly userLikes: Model<UserLikesDocument>,
   ) {}
 
   async deleteAllData() {
@@ -28,6 +34,7 @@ export class TestingDataRepository {
       this.userModel.deleteMany({}),
       this.commentModel.deleteMany({}),
       this.authModel.deleteMany({}),
+      this.userLikes.deleteMany({}),
     ]);
   }
 }

@@ -30,6 +30,7 @@ export class PostsQueryRepository {
         .find({})
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(getSkip(pageNumber, pageSize))
+        .limit(pageSize)
         .select('-_id -updatedAt')
         .lean(),
       this.postModel.find({}).countDocuments(),
@@ -106,6 +107,7 @@ export class PostsQueryRepository {
         })
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(getSkip(pageNumber, pageSize))
+        .limit(pageSize)
         .select('-_id -updatedAt')
         .lean(),
       this.postModel

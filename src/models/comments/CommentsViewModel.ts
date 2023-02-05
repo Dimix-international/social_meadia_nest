@@ -1,3 +1,5 @@
+import { LIKE_STATUSES } from '../../constants/general/general';
+
 export type CommentsViewModel = {
   pagesCount: number;
   page: number;
@@ -9,7 +11,14 @@ export type CommentsViewModel = {
 export type CommentViewModelType = {
   id: string;
   content: string;
-  userId: string;
-  userLogin: string;
+  commentatorInfo: {
+    userId: string;
+    userLogin: string;
+  };
   createdAt: Date;
+  likesInfo: {
+    likesCount: number;
+    dislikesCount: number;
+    myStatus: LIKE_STATUSES;
+  };
 };

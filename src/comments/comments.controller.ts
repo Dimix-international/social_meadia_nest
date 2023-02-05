@@ -15,7 +15,11 @@ import { Request } from 'express';
 import { UsersQueryRepository } from '../users/users.query-repository';
 import { CommentsQueryRepository } from './comments.query-repository';
 import { HTTP_STATUSES } from '../constants/general/general';
-import { CommentCreateInput, CommentsService } from './comments.service';
+import {
+  CommentCreateInput,
+  CommentsService,
+  UpdateLikeStatus,
+} from './comments.service';
 import { AuthUserGuard } from '../guards/auth-user.guard';
 import { SkipThrottle } from '@nestjs/throttler';
 
@@ -64,6 +68,7 @@ export class CommentsController {
 
     const isDeletedComment = await this.commentsService.deleteComment(
       commentId,
+      user.id,
     );
 
     if (!isDeletedComment) {
@@ -99,7 +104,7 @@ export class CommentsController {
       throw new ForbiddenException();
     }
 
-    const isUpdatedComment = await this.commentsService.updateComment(
+    const isUpdatedComment = await this.commentsService.updateContentComment(
       commentId,
       data.content,
     );
@@ -107,5 +112,36 @@ export class CommentsController {
     if (!isUpdatedComment) {
       throw new NotFoundException();
     }
+  }
+
+  @UseGuards(AuthUserGuard)
+  @HttpCode(HTTP_STATUSES.NO_CONTENT_204)
+  @Put('/:id/like-status')
+  async updateLikeStatus(
+    @Param('id') commentId: string,
+    @Body() data: UpdateLikeStatus,
+    @Req() req: Request,
+  ) {
+    const comment = await this.commentsQueryRepository.getCommentById(
+      commentId,
+    );
+
+    if (!comment) {
+      throw new NotFoundException();
+    }
+
+    const { id: userId } = req.user;
+
+    const user = await this.usersQueryRepository.getUserById(userId);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return await this.commentsService.updateLikeComment(
+      comment.id,
+      data.likeStatus,
+      userId,
+    );
   }
 }

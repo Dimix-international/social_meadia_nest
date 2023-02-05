@@ -59,7 +59,10 @@ export class AuthService {
   async updateDeviceToken(deviceId: string, token: string): Promise<void> {
     const lastActiveDate = await this.jwtService.getCreatedDateToken(token);
 
-    await this.authRepository.updateDeviceToken(deviceId, lastActiveDate);
+    return await this.authRepository.updateDeviceToken(
+      deviceId,
+      lastActiveDate,
+    );
   }
 
   async checkCorrectDeviceInfo(

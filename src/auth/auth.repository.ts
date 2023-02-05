@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { AuthModel } from './schema/schema-type';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auth, AuthDocument } from './schema/auth-nest.schema';
 import { Model } from 'mongoose';
@@ -16,7 +15,7 @@ export class AuthRepository {
   }
 
   async updateDeviceToken(deviceId: string, lastActiveDate: string) {
-    await AuthModel.updateOne({ deviceId }, { lastActiveDate });
+    await this.authModel.updateOne({ deviceId }, { lastActiveDate });
   }
 
   async terminateDevice(deviceId: string): Promise<DeleteResult> {

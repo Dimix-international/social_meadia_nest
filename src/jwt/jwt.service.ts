@@ -29,7 +29,7 @@ export class JwtService {
         accessToken,
         settings.JWT_SECRET_ACCESS,
       );
-      return result.deviceId as string;
+      return result.userId as string;
     } catch (e) {
       return null;
     }

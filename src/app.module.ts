@@ -35,6 +35,10 @@ import { Blog, BlogSchema } from './blogs/schema/blog-nest.schema';
 import { Auth, AuthSchema } from './auth/schema/auth-nest.schema';
 import { Comment, CommentSchema } from './comments/schema/comment-nest.schema';
 import { User, UserSchema } from './users/schema/user-nest.schema';
+import { UserLikes, UserLikesSchema } from './userLikes/schema/userLike.schema';
+import { UserLikesRepository } from './userLikes/userLikes.repository';
+import { UserLikesQueryRepository } from './userLikes/userLikes.query-repository';
+import { UserLikesService } from './userLikes/userLikes.service';
 
 const guards = [
   {
@@ -62,6 +66,7 @@ const services = [
   AuthService,
   SecurityService,
   PostsService,
+  UserLikesService,
 ];
 
 const repositories = [
@@ -76,6 +81,8 @@ const repositories = [
   TestingDataRepository,
   AuthRepository,
   AuthQueryRepository,
+  UserLikesRepository,
+  UserLikesQueryRepository,
 ];
 
 const adapters = [EmailAdapter];
@@ -86,6 +93,7 @@ const models = [
   { name: Blog.name, schema: BlogSchema },
   { name: Auth.name, schema: AuthSchema },
   { name: Comment.name, schema: CommentSchema },
+  { name: UserLikes.name, schema: UserLikesSchema },
 ];
 
 @Module({
