@@ -70,6 +70,7 @@ export class CommentsService {
         },
       };
     } catch (e) {
+      console.log('ERRRO!', e);
       return false;
     }
   }

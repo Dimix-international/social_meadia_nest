@@ -19,7 +19,6 @@ import { transformInNumber } from '../helpers/helpers';
 import { PostsQueryRepository } from './posts.query-repository';
 import { PostCreateInput, PostsService } from './posts.service';
 import { HTTP_STATUSES } from '../constants/general/general';
-import { CommentsQueryRepository } from '../comments/comments.query-repository';
 import {
   CommentCreateInput,
   CommentsService,
@@ -34,7 +33,6 @@ import { SkipThrottle } from '@nestjs/throttler';
 export class PostsController {
   constructor(
     protected postsQueryRepository: PostsQueryRepository,
-    protected commentsQueryRepository: CommentsQueryRepository,
     protected commentsService: CommentsService,
     protected postsService: PostsService,
   ) {}
@@ -128,7 +126,10 @@ export class PostsController {
     );
 
     if (!comment) {
-      throw new BadRequestException();
+      throw new BadRequestException({
+        field: 'field !!!',
+        message: 'unknown error',
+      });
     }
 
     return comment;

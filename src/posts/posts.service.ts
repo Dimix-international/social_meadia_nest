@@ -86,9 +86,9 @@ export class PostsService {
   async getCommentsForPost(
     data: CommentForPostType,
   ): Promise<CommentsViewModel> {
-    const commentData = await this.commentsQueryRepository.getComments(data);
+    const commentsData = await this.commentsQueryRepository.getComments(data);
 
-    const { items, ...restCommentData } = commentData;
+    const { items, ...restCommentsData } = commentsData;
 
     const promises = [];
 
@@ -109,7 +109,7 @@ export class PostsService {
     };
 
     return {
-      ...restCommentData,
+      ...restCommentsData,
       items: items.map((item) => ({
         id: item.id,
         content: item.content,
