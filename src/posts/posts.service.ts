@@ -107,9 +107,7 @@ export class PostsService {
     const getLikes = (itemId) => {
       const likesInfo = resultLikesInfo.filter((item) => !!item);
 
-      const document = likesInfo
-        .filter((item) => !!item)
-        .find((item) => item.documentId === itemId);
+      const document = likesInfo.find((item) => item.documentId === itemId);
 
       const user = userId
         ? likesInfo.find(
