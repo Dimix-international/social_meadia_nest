@@ -25,7 +25,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { CommentViewModelType } from '../models/comments/CommentsViewModel';
 import { UserLikesQueryRepository } from '../userLikes/userLikes.query-repository';
 import { Cookies } from '../decorators/params/cookies.decorator';
-import { AuthService } from '../auth/auth.service';
+import { JwtService } from '../jwt/jwt.service';
 
 @SkipThrottle()
 @Controller('comments')
@@ -35,7 +35,7 @@ export class CommentsController {
     protected commentsQueryRepository: CommentsQueryRepository,
     protected commentsService: CommentsService,
     protected userLikesQueryRepository: UserLikesQueryRepository,
-    protected authService: AuthService,
+    protected jwtService: JwtService,
   ) {}
 
   @Get('/:id')
@@ -43,7 +43,7 @@ export class CommentsController {
     @Param('id') id: string,
     @Cookies('refreshToken') refreshToken: string | undefined,
   ): Promise<CommentViewModelType> {
-    const token = await this.authService.checkCorrectToken(refreshToken);
+    const token = await this.jwtService.validateRefreshToken(refreshToken);
 
     const [comment, userLikesInfo, userLikeInfo] = await Promise.all([
       await this.commentsQueryRepository.getCommentById(id),

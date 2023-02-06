@@ -1,14 +1,11 @@
 import { BlogsQueryRepository } from '../blogs/blogs.query-repository';
 import { PostsRepository } from './posts.repository';
 import { PostCreateModel } from '../models/posts/PostsCreateModel';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Post } from './dto';
 import { IsNotEmpty, MaxLength } from 'class-validator';
 import { CommentsQueryRepository } from '../comments/comments.query-repository';
-import {
-  LikeInfoType,
-  UserLikesQueryRepository,
-} from '../userLikes/userLikes.query-repository';
+import { UserLikesQueryRepository } from '../userLikes/userLikes.query-repository';
 import { CommentsViewModel } from '../models/comments/CommentsViewModel';
 import { LIKE_STATUSES } from '../constants/general/general';
 
@@ -106,7 +103,6 @@ export class PostsService {
     });
 
     const resultLikesInfo = await Promise.all(promisesLikesInfo);
-    console.log('resultLikesInfo', resultLikesInfo);
 
     const getLikes = (itemId) => {
       const likesInfo = resultLikesInfo.filter((item) => !!item);

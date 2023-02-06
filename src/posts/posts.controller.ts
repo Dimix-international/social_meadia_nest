@@ -28,7 +28,7 @@ import { CommentsGetModel } from '../models/comments/CommentsGetModel';
 import { AuthUserGuard } from '../guards/auth-user.guard';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Cookies } from '../decorators/params/cookies.decorator';
-import { AuthService } from '../auth/auth.service';
+import { JwtService } from '../jwt/jwt.service';
 
 @SkipThrottle()
 @Controller('posts')
@@ -37,7 +37,7 @@ export class PostsController {
     protected postsQueryRepository: PostsQueryRepository,
     protected commentsService: CommentsService,
     protected postsService: PostsService,
-    protected authService: AuthService,
+    protected jwtService: JwtService,
   ) {}
 
   @Get()
@@ -153,7 +153,7 @@ export class PostsController {
 
     const [post, tokenInfo] = await Promise.all([
       this.postsQueryRepository.getPostById(postId),
-      this.authService.checkCorrectToken(refreshToken),
+      this.jwtService.validateRefreshToken(refreshToken),
     ]);
 
     if (!post) {
