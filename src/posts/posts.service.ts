@@ -103,6 +103,7 @@ export class PostsService {
     });
 
     const resultLikesInfo = await Promise.all(promisesLikesInfo);
+    console.log('resultLikesInfo', resultLikesInfo);
 
     const getLikes = (itemId) => {
       const likesInfo = resultLikesInfo.filter((item) => !!item);
