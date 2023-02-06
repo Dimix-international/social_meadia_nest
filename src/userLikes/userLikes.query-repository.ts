@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectModel, Prop } from '@nestjs/mongoose';
 import { UserLikes, UserLikesDocument } from './schema/userLike.schema';
 import { Model } from 'mongoose';
 import { LIKE_STATUSES } from '../constants/general/general';
@@ -10,6 +10,13 @@ export class UserLikesQueryRepository {
     @InjectModel(UserLikes.name)
     private readonly userLikes: Model<UserLikesDocument>,
   ) {}
+
+  async getUserLikeStatus(
+    senderId: string,
+    documentId: string,
+  ): Promise<UserLikeInfoType> {
+    return this.userLikes.findOne({ senderId, documentId }).lean();
+  }
 
   async getLikesInfo(documentId: string): Promise<LikeInfoType> {
     const [likesCount, dislikesCount] = await Promise.all([
@@ -34,6 +41,15 @@ export class UserLikesQueryRepository {
     };
   }
 }
+
+export type UserLikeInfoType = {
+  id: string;
+  documentId: string;
+  senderId: string;
+  senderLogin: string;
+  likeStatus: LIKE_STATUSES;
+  createdAt: Date;
+};
 
 export type LikeInfoType = {
   documentId: string;

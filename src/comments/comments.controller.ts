@@ -24,6 +24,8 @@ import { AuthUserGuard } from '../guards/auth-user.guard';
 import { SkipThrottle } from '@nestjs/throttler';
 import { CommentViewModelType } from '../models/comments/CommentsViewModel';
 import { UserLikesQueryRepository } from '../userLikes/userLikes.query-repository';
+import { Cookies } from '../decorators/params/cookies.decorator';
+import { AuthService } from '../auth/auth.service';
 
 @SkipThrottle()
 @Controller('comments')
@@ -33,25 +35,27 @@ export class CommentsController {
     protected commentsQueryRepository: CommentsQueryRepository,
     protected commentsService: CommentsService,
     protected userLikesQueryRepository: UserLikesQueryRepository,
+    protected authService: AuthService,
   ) {}
 
   @Get('/:id')
   async getComment(
     @Param('id') id: string,
-    @Req() req: Request,
+    @Cookies('refreshToken') refreshToken: string | undefined,
   ): Promise<CommentViewModelType> {
-    const [comment, userLikesInfo] = await Promise.all([
+    const token = await this.authService.checkCorrectToken(refreshToken);
+
+    const [comment, userLikesInfo, userLikeInfo] = await Promise.all([
       await this.commentsQueryRepository.getCommentById(id),
       await this.userLikesQueryRepository.getLikesInfo(id),
+      await this.userLikesQueryRepository.getUserLikeStatus(token?.userId, id),
     ]);
-
-    const { id: authUserId } = req.user || {};
 
     if (!comment) {
       throw new NotFoundException();
     }
 
-    const { likeStatus, userLogin, userId, ...restDataComment } = comment;
+    const { userLogin, userId, ...restDataComment } = comment;
     return {
       ...restDataComment,
       commentatorInfo: {
@@ -61,7 +65,7 @@ export class CommentsController {
       likesInfo: {
         likesCount: userLikesInfo.likesCount,
         dislikesCount: userLikesInfo.dislikesCount,
-        myStatus: authUserId ? likeStatus : LIKE_STATUSES.NONE,
+        myStatus: userLikeInfo?.likeStatus || LIKE_STATUSES.NONE,
       },
     };
   }
@@ -166,6 +170,7 @@ export class CommentsController {
       comment.id,
       data.likeStatus,
       userId,
+      user.login,
     );
   }
 }

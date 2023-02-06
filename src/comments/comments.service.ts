@@ -70,7 +70,6 @@ export class CommentsService {
         },
       };
     } catch (e) {
-      console.log('ERRRO!', e);
       return false;
     }
   }
@@ -103,14 +102,28 @@ export class CommentsService {
     commentId: string,
     likeStatus: LIKE_STATUSES,
     userId: string,
+    userLogin: string,
   ): Promise<boolean> {
+    const userComment = await this.userLikes.findOne({
+      senderId: userId,
+      documentId: commentId,
+    });
+
     try {
-      const [updatedComment] = await Promise.all([
-        this.commentsRepository.updateComment(commentId, { likeStatus }),
-        this.userLikesRepository.updateLike(commentId, userId, likeStatus),
-      ]);
-      const { matchedCount } = updatedComment;
-      return !!matchedCount;
+      if (userComment) {
+        userComment.likeStatus = likeStatus;
+        await userComment.save();
+      } else {
+        const newLike = new this.userLikes({
+          id: uuidv4(),
+          documentId: commentId,
+          senderId: userId,
+          senderLogin: userLogin,
+          likeStatus: likeStatus,
+        });
+        await newLike.save();
+      }
+      return true;
     } catch (e) {
       return false;
     }

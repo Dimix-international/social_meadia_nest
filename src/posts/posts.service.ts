@@ -1,7 +1,7 @@
 import { BlogsQueryRepository } from '../blogs/blogs.query-repository';
 import { PostsRepository } from './posts.repository';
 import { PostCreateModel } from '../models/posts/PostsCreateModel';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Post } from './dto';
 import { IsNotEmpty, MaxLength } from 'class-validator';
 import { CommentsQueryRepository } from '../comments/comments.query-repository';
@@ -10,6 +10,7 @@ import {
   UserLikesQueryRepository,
 } from '../userLikes/userLikes.query-repository';
 import { CommentsViewModel } from '../models/comments/CommentsViewModel';
+import { LIKE_STATUSES } from '../constants/general/general';
 
 export class PostCreateInput {
   @IsNotEmpty({ message: 'This field is required!' })
@@ -85,26 +86,45 @@ export class PostsService {
   }
   async getCommentsForPost(
     data: CommentForPostType,
+    userId: string | undefined,
   ): Promise<CommentsViewModel> {
     const commentsData = await this.commentsQueryRepository.getComments(data);
 
     const { items, ...restCommentsData } = commentsData;
 
-    const promises = [];
+    const promisesLikesInfo = [];
 
     items.forEach((item) => {
-      promises.push(this.userLikesQueryRepository.getLikesInfo(item.id));
+      promisesLikesInfo.push(
+        this.userLikesQueryRepository.getLikesInfo(item.id),
+      );
+      if (userId) {
+        promisesLikesInfo.push(
+          this.userLikesQueryRepository.getUserLikeStatus(userId, item.id),
+        );
+      }
     });
 
-    const resultLikesInfo: LikeInfoType[] = await Promise.all(promises);
+    const resultLikesInfo = await Promise.all(promisesLikesInfo);
+    console.log('resultLikesInfo', resultLikesInfo);
 
     const getLikes = (itemId) => {
-      const document = resultLikesInfo.find(
-        (item) => item.documentId === itemId,
-      );
+      const likesInfo = resultLikesInfo.filter((item) => !!item);
+
+      const document = likesInfo
+        .filter((item) => !!item)
+        .find((item) => item.documentId === itemId);
+
+      const user = userId
+        ? likesInfo.find(
+            (item) => item.senderId === userId && item.documentId === itemId,
+          )
+        : undefined;
+
       return {
         likesCount: document?.likesCount || 0,
         dislikesCount: document?.dislikesCount || 0,
+        myStatus: user?.likeStatus || LIKE_STATUSES.NONE,
       };
     };
 
@@ -120,7 +140,6 @@ export class PostsService {
         createdAt: item.createdAt,
         likesInfo: {
           ...getLikes(item.id),
-          myStatus: item.likeStatus,
         },
       })),
     };

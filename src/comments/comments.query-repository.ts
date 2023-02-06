@@ -3,7 +3,6 @@ import { getPagesCount, getSkip } from '../helpers/helpers';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentDocument } from './schema/comment-nest.schema';
 import { Model } from 'mongoose';
-import { LIKE_STATUSES } from '../constants/general/general';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -67,7 +66,6 @@ type CommentType = {
   userId: string;
   userLogin: string;
   createdAt: Date;
-  likeStatus: LIKE_STATUSES;
 };
 
 export type CommentForPostType = {
