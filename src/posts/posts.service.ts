@@ -86,6 +86,7 @@ export class PostsService {
     userId: string | undefined,
   ): Promise<CommentsViewModel> {
     const commentsData = await this.commentsQueryRepository.getComments(data);
+    console.log('userId', userId);
 
     const { items, ...restCommentsData } = commentsData;
 
@@ -118,7 +119,6 @@ export class PostsService {
         : undefined;
 
       console.log('user', user);
-      console.log('userId', userId);
       console.log('final', {
         likesCount: document?.likesCount || 0,
         dislikesCount: document?.dislikesCount || 0,
