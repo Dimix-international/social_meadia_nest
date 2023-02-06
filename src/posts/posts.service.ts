@@ -108,12 +108,21 @@ export class PostsService {
       const likesInfo = resultLikesInfo.filter((item) => !!item);
 
       const document = likesInfo.find((item) => item.documentId === itemId);
+      console.log('document', document);
 
       const user = userId
         ? likesInfo.find(
             (item) => item.senderId === userId && item.documentId === itemId,
           )
         : undefined;
+
+      console.log('user', user);
+      console.log('userId', userId);
+      console.log('final', {
+        likesCount: document?.likesCount || 0,
+        dislikesCount: document?.dislikesCount || 0,
+        myStatus: user?.likeStatus || LIKE_STATUSES.NONE,
+      });
 
       return {
         likesCount: document?.likesCount || 0,
