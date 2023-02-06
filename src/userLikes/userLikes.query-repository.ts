@@ -34,6 +34,16 @@ export class UserLikesQueryRepository {
         .countDocuments(),
     ]);
 
+    // const likesAndDislikes = await this.userLikes.aggregate([
+    //   { $match: { documentId, likeStatus: LIKE_STATUSES.LIKE } },
+    //   { $group: {} },
+    //   { $project: {
+    //       _id: 0,
+    //       likesCount: '$likes',
+    //     },
+    //   },
+    // ]);
+
     return {
       documentId,
       likesCount,

@@ -3,6 +3,7 @@ import { getPagesCount, getSkip } from '../helpers/helpers';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentDocument } from './schema/comment-nest.schema';
 import { Model } from 'mongoose';
+import { LIKE_STATUSES } from '../constants/general/general';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -49,6 +50,36 @@ export class CommentsQueryRepository {
 
   async getCommentById(id: string): Promise<CommentType | null> {
     return this.commentModel.findOne({ id }).select('-_id -updatedAt').lean();
+    /*    const [comment] = await this.commentModel.aggregate([
+      {
+        $match: { id },
+      },
+      {
+        $lookup: {
+          from: 'userLikes',
+          localField: 'id',
+          foreignField: 'documentId',
+          pipeline: [
+            {
+              $match: { likeStatus: LIKE_STATUSES.LIKE },
+            },
+          ],
+          as: 'likesCount',
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          id: 1,
+          content: 1,
+          userId: 1,
+          userLogin: 1,
+          createdAt: 1,
+          'likesInfo.likesCount': { $size: '$likesCount' },
+        },
+      },
+    ]);
+    return comment;*/
   }
 }
 

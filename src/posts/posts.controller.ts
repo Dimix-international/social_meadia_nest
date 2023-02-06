@@ -27,8 +27,8 @@ import { AuthAdminGuard } from '../guards/auth-admin.guard';
 import { CommentsGetModel } from '../models/comments/CommentsGetModel';
 import { AuthUserGuard } from '../guards/auth-user.guard';
 import { SkipThrottle } from '@nestjs/throttler';
-import { Cookies } from '../decorators/params/cookies.decorator';
 import { JwtService } from '../jwt/jwt.service';
+import { AuthInfoUserGuard } from '../guards/auth-info-user.guard';
 
 @SkipThrottle()
 @Controller('posts')
@@ -138,11 +138,12 @@ export class PostsController {
     return comment;
   }
 
+  @UseGuards(AuthInfoUserGuard)
   @Get('/:id/comments')
   async getCommentsForPost(
     @Param('id') postId: string,
     @Query() data: CommentsGetModel,
-    @Cookies('refreshToken') refreshToken: string | undefined,
+    @Req() req: Request,
   ) {
     const {
       pageNumber,
@@ -151,10 +152,9 @@ export class PostsController {
       sortDirection = 'desc',
     } = data;
 
-    const [post, tokenInfo] = await Promise.all([
-      this.postsQueryRepository.getPostById(postId),
-      this.jwtService.validateRefreshToken(refreshToken),
-    ]);
+    const { id: userId } = req.user || {};
+
+    const post = await this.postsQueryRepository.getPostById(postId);
 
     if (!post) {
       throw new NotFoundException();
@@ -168,7 +168,7 @@ export class PostsController {
         sortBy,
         sortDirection,
       },
-      tokenInfo?.userId,
+      userId,
     );
   }
 }

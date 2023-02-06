@@ -24,8 +24,7 @@ import { AuthUserGuard } from '../guards/auth-user.guard';
 import { SkipThrottle } from '@nestjs/throttler';
 import { CommentViewModelType } from '../models/comments/CommentsViewModel';
 import { UserLikesQueryRepository } from '../userLikes/userLikes.query-repository';
-import { Cookies } from '../decorators/params/cookies.decorator';
-import { JwtService } from '../jwt/jwt.service';
+import { AuthInfoUserGuard } from '../guards/auth-info-user.guard';
 
 @SkipThrottle()
 @Controller('comments')
@@ -35,25 +34,26 @@ export class CommentsController {
     protected commentsQueryRepository: CommentsQueryRepository,
     protected commentsService: CommentsService,
     protected userLikesQueryRepository: UserLikesQueryRepository,
-    protected jwtService: JwtService,
   ) {}
 
+  @UseGuards(AuthInfoUserGuard)
   @Get('/:id')
   async getComment(
     @Param('id') id: string,
-    @Cookies('refreshToken') refreshToken: string | undefined,
+    @Req() req: Request,
   ): Promise<CommentViewModelType> {
-    const token = await this.jwtService.validateRefreshToken(refreshToken);
+    const { id: userAuthId } = req.user || {};
 
-    const [comment, userLikesInfo, userLikeInfo] = await Promise.all([
-      await this.commentsQueryRepository.getCommentById(id),
-      await this.userLikesQueryRepository.getLikesInfo(id),
-      await this.userLikesQueryRepository.getUserLikeStatus(token?.userId, id),
-    ]);
+    const comment = await this.commentsQueryRepository.getCommentById(id);
 
     if (!comment) {
       throw new NotFoundException();
     }
+
+    const [userLikesInfo, userLikeInfo] = await Promise.all([
+      await this.userLikesQueryRepository.getLikesInfo(id),
+      await this.userLikesQueryRepository.getUserLikeStatus(userAuthId, id),
+    ]);
 
     const { userLogin, userId, ...restDataComment } = comment;
     return {

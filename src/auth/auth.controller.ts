@@ -75,8 +75,8 @@ export class AuthRouterController {
     });
 
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true, // для https
+      //  httpOnly: true,
+      //  secure: true, // для https
     });
 
     return { accessToken };
@@ -138,8 +138,8 @@ export class AuthRouterController {
     await this.authService.updateDeviceToken(deviceId, newRefreshToken);
 
     res.cookie('refreshToken', newRefreshToken, {
-      httpOnly: true,
-      secure: true, // для https
+      // httpOnly: true,
+      //  secure: true, // для https
     });
 
     return { accessToken };
