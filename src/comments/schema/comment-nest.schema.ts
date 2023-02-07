@@ -12,6 +12,9 @@ export class Comment {
   userId: string;
 
   @Prop({ type: String, required: true })
+  postId: string;
+
+  @Prop({ type: String, required: true })
   userLogin: string;
 
   @Prop({ type: String, required: true })
