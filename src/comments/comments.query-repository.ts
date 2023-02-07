@@ -3,7 +3,6 @@ import { getPagesCount, getSkip } from '../helpers/helpers';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentDocument } from './schema/comment-nest.schema';
 import { Model } from 'mongoose';
-import { LIKE_STATUSES } from '../constants/general/general';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -34,7 +33,7 @@ export class CommentsQueryRepository {
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(getSkip(pageNumber, pageSize))
         .limit(pageSize)
-        .select('-_id -updatedAt')
+        .select('-_id -updatedAt -postId')
         .lean(),
       this.commentModel.find({ postId }).countDocuments(),
     ]);
@@ -49,7 +48,10 @@ export class CommentsQueryRepository {
   }
 
   async getCommentById(id: string): Promise<CommentType | null> {
-    return this.commentModel.findOne({ id }).select('-_id -updatedAt').lean();
+    return this.commentModel
+      .findOne({ id })
+      .select('-_id -updatedAt -postId')
+      .lean();
     /*    const [comment] = await this.commentModel.aggregate([
       {
         $match: { id },
