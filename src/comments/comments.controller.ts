@@ -42,7 +42,6 @@ export class CommentsController {
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<CommentViewModelType> {
-    //fixed
     const { id: userAuthId } = req.user || {};
 
     const comment = await this.commentsQueryRepository.getCommentById(id);
@@ -65,7 +64,10 @@ export class CommentsController {
 
     const getStatusUser = () => {
       if (!likeInfo) return LIKE_STATUSES.NONE;
-      return likeInfo.commentsLikes[0]?.likeStatus || LIKE_STATUSES.NONE;
+      const like = likeInfo.commentsLikes.find(
+        (item) => item.documentId === id,
+      );
+      return like?.likeStatus || LIKE_STATUSES.NONE;
     };
 
     const { userLogin, userId, ...restDataComment } = comment;

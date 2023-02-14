@@ -22,7 +22,7 @@ export class UserLikesQueryRepository {
         senderId,
         [type]: {
           $elemMatch: {
-            documentId,
+            documentId: documentId,
           },
         },
       })
@@ -81,8 +81,8 @@ export type UserLikeInfoType = {
 export type GetUserLikesInfoType = {
   senderId: string;
   senderLogin: string;
-  commentsLikes: UserLikeInfoType;
-  postsLikes: UserLikeInfoType;
+  commentsLikes: UserLikeInfoType[];
+  postsLikes: UserLikeInfoType[];
 };
 
 export type LikeInfoType = {
