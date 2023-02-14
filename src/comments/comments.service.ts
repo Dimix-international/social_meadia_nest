@@ -125,19 +125,17 @@ export class CommentsService {
     userLogin: string,
     type: UserLikesType,
   ): Promise<boolean> {
-    const userLike = await this.userLikes.findOne({
+    const userLiked = await this.userLikes.findOne({
       senderId: userId,
-      [type]: {
-        $elemMatch: {
-          documentId: commentId,
-        },
-      },
     });
 
     try {
-      if (userLike) {
-        userLike.commentsLikes[0].likeStatus = likeStatus;
-        await userLike.save();
+      if (userLiked) {
+        const likeElementIndex = userLiked.commentsLikes.findIndex(
+          (item) => item.documentId === commentId,
+        );
+        userLiked.commentsLikes[likeElementIndex].likeStatus = likeStatus;
+        await userLiked.save();
       } else {
         const newLike = new Like({
           documentId: commentId,
@@ -147,7 +145,7 @@ export class CommentsService {
         });
         await this.userLikesRepository.createLike({
           like: newLike,
-          type: 'commentsLikes',
+          type,
         });
       }
       return true;

@@ -8,7 +8,6 @@ import {
 import { Model } from 'mongoose';
 import { DeleteResult } from 'mongodb';
 import { Like } from './dto';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class UserLikesRepository {
@@ -21,7 +20,6 @@ export class UserLikesRepository {
     const { like, type } = data;
     const { senderId, senderLogin, ...restLike } = like;
     const userLikes = new this.userLikes({
-      id: uuidv4(),
       senderId,
       senderLogin,
       commentsLikes: [],

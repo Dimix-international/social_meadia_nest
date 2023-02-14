@@ -22,7 +22,7 @@ export class UserLikesQueryRepository {
         senderId,
         [type]: {
           $elemMatch: {
-            documentId: documentId,
+            documentId,
           },
         },
       })
