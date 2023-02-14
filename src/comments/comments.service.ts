@@ -6,12 +6,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import {
   UserLikes,
   UserLikesDocument,
+  UserLikesType,
 } from '../userLikes/schema/userLike.schema';
 import { Model } from 'mongoose';
 import { LIKE_STATUSES } from '../constants/general/general';
 import { CommentViewModelType } from '../models/comments/CommentsViewModel';
 import { UserLikesRepository } from '../userLikes/userLikes.repository';
-import { v4 as uuidv4 } from 'uuid';
+import { Like } from '../userLikes/dto';
 
 export class CommentCreateInput {
   @IsNotEmpty({ message: 'This field is required!' })
@@ -43,17 +44,32 @@ export class CommentsService {
     postId: string,
   ): Promise<CommentViewModelType | boolean> {
     const newComment = new Comment(content, userId, userLogin, postId);
-    const newLike = new this.userLikes({
-      id: uuidv4(),
+    const newLike = new Like({
       documentId: newComment.id,
       senderId: userId,
       senderLogin: userLogin,
       likeStatus: LIKE_STATUSES.NONE,
     });
+    const userLike = await this.userLikes.findOne({
+      senderId: userId,
+    });
+
+    const updateCreateLike = async () => {
+      if (userLike) {
+        userLike.commentsLikes.push(newLike);
+        userLike.save();
+        return;
+      }
+      return this.userLikesRepository.createLike({
+        like: newLike,
+        type: 'commentsLikes',
+      });
+    };
+
     try {
       await Promise.all([
+        updateCreateLike(),
         this.commentsRepository.createCommentForPost(newComment),
-        newLike.save(),
       ]);
       return {
         id: newComment.id,
@@ -78,7 +94,11 @@ export class CommentsService {
     try {
       const [deletedComment] = await Promise.all([
         this.commentsRepository.deleteComment(commentId),
-        this.userLikesRepository.deleteLike(commentId, userId),
+        this.userLikesRepository.deleteLike({
+          documentId: commentId,
+          senderId: userId,
+          type: 'commentsLikes',
+        }),
       ]);
       const { deletedCount } = deletedComment;
       return !!deletedCount;
@@ -98,30 +118,37 @@ export class CommentsService {
     return !!matchedCount;
   }
 
-  async updateLikeComment(
+  async updateLikeDocument(
     commentId: string,
     likeStatus: LIKE_STATUSES,
     userId: string,
     userLogin: string,
+    type: UserLikesType,
   ): Promise<boolean> {
-    const userComment = await this.userLikes.findOne({
+    const userLike = await this.userLikes.findOne({
       senderId: userId,
-      documentId: commentId,
+      [type]: {
+        $elemMatch: {
+          documentId: commentId,
+        },
+      },
     });
 
     try {
-      if (userComment) {
-        userComment.likeStatus = likeStatus;
-        await userComment.save();
+      if (userLike) {
+        userLike.commentsLikes[0].likeStatus = likeStatus;
+        await userLike.save();
       } else {
-        const newLike = new this.userLikes({
-          id: uuidv4(),
+        const newLike = new Like({
           documentId: commentId,
           senderId: userId,
           senderLogin: userLogin,
           likeStatus: likeStatus,
         });
-        await newLike.save();
+        await this.userLikesRepository.createLike({
+          like: newLike,
+          type: 'commentsLikes',
+        });
       }
       return true;
     } catch (e) {

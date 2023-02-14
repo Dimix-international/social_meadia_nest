@@ -42,6 +42,7 @@ export class CommentsController {
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<CommentViewModelType> {
+    //fixed
     const { id: userAuthId } = req.user || {};
 
     const comment = await this.commentsQueryRepository.getCommentById(id);
@@ -50,10 +51,22 @@ export class CommentsController {
       throw new NotFoundException();
     }
 
-    const [userLikesInfo, userLikeInfo] = await Promise.all([
-      await this.userLikesQueryRepository.getLikesInfo(id),
-      await this.userLikesQueryRepository.getUserLikeStatus(userAuthId, id),
+    const [userLikesInfo, likeInfo] = await Promise.all([
+      await this.userLikesQueryRepository.getLikesInfo({
+        documentId: id,
+        type: 'commentsLikes',
+      }),
+      await this.userLikesQueryRepository.getUserLikeStatus({
+        senderId: userAuthId,
+        documentId: id,
+        type: 'commentsLikes',
+      }),
     ]);
+
+    const getStatusUser = () => {
+      if (!likeInfo) return LIKE_STATUSES.NONE;
+      return likeInfo.commentsLikes[0]?.likeStatus || LIKE_STATUSES.NONE;
+    };
 
     const { userLogin, userId, ...restDataComment } = comment;
     return {
@@ -65,7 +78,7 @@ export class CommentsController {
       likesInfo: {
         likesCount: userLikesInfo.likesCount,
         dislikesCount: userLikesInfo.dislikesCount,
-        myStatus: userLikeInfo?.likeStatus || LIKE_STATUSES.NONE,
+        myStatus: getStatusUser(),
       },
     };
   }
@@ -166,11 +179,12 @@ export class CommentsController {
       throw new NotFoundException();
     }
 
-    return await this.commentsService.updateLikeComment(
+    return await this.commentsService.updateLikeDocument(
       comment.id,
       data.likeStatus,
       userId,
       user.login,
+      'commentsLikes',
     );
   }
 }

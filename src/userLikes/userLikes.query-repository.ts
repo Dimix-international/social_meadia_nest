@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel, Prop } from '@nestjs/mongoose';
-import { UserLikes, UserLikesDocument } from './schema/userLike.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import {
+  UserLikes,
+  UserLikesDocument,
+  UserLikesType,
+} from './schema/userLike.schema';
 import { Model } from 'mongoose';
 import { LIKE_STATUSES } from '../constants/general/general';
 
@@ -11,38 +15,44 @@ export class UserLikesQueryRepository {
     private readonly userLikes: Model<UserLikesDocument>,
   ) {}
 
-  async getUserLikeStatus(
-    senderId: string,
-    documentId: string,
-  ): Promise<UserLikeInfoType> {
-    return this.userLikes.findOne({ senderId, documentId }).lean();
+  async getUserLikeStatus(data: GetLikeType): Promise<GetUserLikesInfoType> {
+    const { type, senderId, documentId } = data;
+    return this.userLikes
+      .findOne({
+        senderId,
+        [type]: {
+          $elemMatch: {
+            documentId,
+          },
+        },
+      })
+      .lean();
   }
 
-  async getLikesInfo(documentId: string): Promise<LikeInfoType> {
+  async getLikesInfo(data: GetLikeInfoType): Promise<LikeInfoType> {
+    const { type, documentId } = data;
     const [likesCount, dislikesCount] = await Promise.all([
       this.userLikes
         .find({
-          documentId,
-          likeStatus: LIKE_STATUSES.LIKE,
+          [type]: {
+            $elemMatch: {
+              documentId,
+              likeStatus: LIKE_STATUSES.LIKE,
+            },
+          },
         })
         .countDocuments(),
       this.userLikes
         .find({
-          documentId,
-          likeStatus: LIKE_STATUSES.DISLIKE,
+          [type]: {
+            $elemMatch: {
+              documentId,
+              likeStatus: LIKE_STATUSES.DISLIKE,
+            },
+          },
         })
         .countDocuments(),
     ]);
-
-    // const likesAndDislikes = await this.userLikes.aggregate([
-    //   { $match: { documentId, likeStatus: LIKE_STATUSES.LIKE } },
-    //   { $group: {} },
-    //   { $project: {
-    //       _id: 0,
-    //       likesCount: '$likes',
-    //     },
-    //   },
-    // ]);
 
     return {
       documentId,
@@ -52,13 +62,27 @@ export class UserLikesQueryRepository {
   }
 }
 
+type GetLikeInfoType = {
+  documentId: string;
+  type: UserLikesType;
+};
+
+type GetLikeType = GetLikeInfoType & {
+  senderId: string;
+};
+
 export type UserLikeInfoType = {
   id: string;
   documentId: string;
-  senderId: string;
-  senderLogin: string;
   likeStatus: LIKE_STATUSES;
   createdAt: Date;
+};
+
+export type GetUserLikesInfoType = {
+  senderId: string;
+  senderLogin: string;
+  commentsLikes: UserLikeInfoType;
+  postsLikes: UserLikeInfoType;
 };
 
 export type LikeInfoType = {

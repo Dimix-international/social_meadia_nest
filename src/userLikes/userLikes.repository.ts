@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserLikes, UserLikesDocument } from './schema/userLike.schema';
+import {
+  UserLikes,
+  UserLikesDocument,
+  UserLikesType,
+} from './schema/userLike.schema';
 import { Model } from 'mongoose';
-import { DeleteResult, UpdateResult } from 'mongodb';
-import { LIKE_STATUSES } from '../constants/general/general';
+import { DeleteResult } from 'mongodb';
+import { Like } from './dto';
 
 @Injectable()
 export class UserLikesRepository {
@@ -12,17 +16,40 @@ export class UserLikesRepository {
     private readonly userLikes: Model<UserLikesDocument>,
   ) {}
 
-  async deleteLike(
-    documentId: string,
-    senderId: string,
-  ): Promise<DeleteResult> {
-    return this.userLikes.deleteOne({ documentId, senderId });
+  async createLike(data: CreateLikeType): Promise<boolean> {
+    const { like, type } = data;
+    const { senderId, senderLogin, ...restLike } = like;
+    const userLikes = new this.userLikes({
+      senderId,
+      senderLogin,
+      commentsLikes: [],
+      postsLikes: [],
+    });
+    userLikes[type].push(restLike);
+    await userLikes.save();
+    return true;
   }
-  async updateLike(
-    documentId: string,
-    senderId: string,
-    likeStatus: LIKE_STATUSES,
-  ): Promise<UpdateResult> {
-    return this.userLikes.updateOne({ documentId, senderId }, { likeStatus });
+
+  async deleteLike(data: DeleteLikeType): Promise<DeleteResult> {
+    const { type, senderId, documentId } = data;
+    return this.userLikes.deleteOne({
+      senderId,
+      [type]: {
+        $elemMatch: {
+          documentId,
+        },
+      },
+    });
   }
 }
+
+type CreateLikeType = {
+  like: Like;
+  type: UserLikesType;
+};
+
+type DeleteLikeType = {
+  type: UserLikesType;
+  documentId: string;
+  senderId: string;
+};

@@ -93,11 +93,18 @@ export class PostsService {
 
     items.forEach((item) => {
       promisesLikesInfo.push(
-        this.userLikesQueryRepository.getLikesInfo(item.id),
+        this.userLikesQueryRepository.getLikesInfo({
+          documentId: item.id,
+          type: 'commentsLikes',
+        }),
       );
       if (userId) {
         promisesLikesInfo.push(
-          this.userLikesQueryRepository.getUserLikeStatus(userId, item.id),
+          this.userLikesQueryRepository.getUserLikeStatus({
+            senderId: userId,
+            documentId: item.id,
+            type: 'commentsLikes',
+          }),
         );
       }
     });
@@ -110,15 +117,21 @@ export class PostsService {
       const document = likesInfo.find((item) => item.documentId === itemId);
 
       const user = userId
-        ? likesInfo.find(
-            (item) => item.senderId === userId && item.documentId === itemId,
-          )
+        ? likesInfo.find((item) => item.senderId === userId)
         : undefined;
+
+      const getStatusLike = () => {
+        if (!user) return LIKE_STATUSES.NONE;
+        const comment = user.commentsLikes.find(
+          (comment) => comment.documentId === document.documentId,
+        );
+        return comment?.likeStatus || LIKE_STATUSES.NONE;
+      };
 
       return {
         likesCount: document?.likesCount || 0,
         dislikesCount: document?.dislikesCount || 0,
-        myStatus: user?.likeStatus || LIKE_STATUSES.NONE,
+        myStatus: getStatusLike(),
       };
     };
 
