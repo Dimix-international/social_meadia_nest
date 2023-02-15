@@ -160,16 +160,25 @@ export class PostsController {
       throw new NotFoundException();
     }
 
-    return await this.postsService.getCommentsForPost(
-      {
-        postId,
-        pageNumber: transformInNumber(pageNumber, 1),
-        pageSize: transformInNumber(pageSize, 10),
-        sortBy,
-        sortDirection,
-      },
-      userId,
-      'commentsLikes',
-    );
+    try {
+      return await this.postsService.getCommentsForPost(
+        {
+          postId,
+          pageNumber: transformInNumber(pageNumber, 1),
+          pageSize: transformInNumber(pageSize, 10),
+          sortBy,
+          sortDirection,
+        },
+        userId,
+        'commentsLikes',
+      );
+    } catch (e) {
+      throw new BadRequestException([
+        {
+          field: 'BRED',
+          message: 'BRED!!',
+        },
+      ]);
+    }
   }
 }
