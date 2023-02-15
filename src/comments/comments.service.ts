@@ -87,6 +87,12 @@ export class CommentsService {
         },
       };
     } catch (e) {
+      throw new BadRequestException([
+        {
+          field: 'field !!!',
+          message: e.message,
+        },
+      ]);
       return false;
     }
   }
