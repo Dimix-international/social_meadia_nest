@@ -157,7 +157,12 @@ export class PostsController {
     const post = await this.postsQueryRepository.getPostById(postId);
 
     if (!post) {
-      throw new NotFoundException();
+      throw new BadRequestException([
+        {
+          field: 'BRED post',
+          message: 'BRED!! post',
+        },
+      ]);
     }
 
     try {
