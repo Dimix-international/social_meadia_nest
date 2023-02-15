@@ -129,10 +129,12 @@ export class PostsController {
     );
 
     if (!comment) {
-      throw new BadRequestException({
-        field: 'field !!!',
-        message: 'unknown error',
-      });
+      throw new BadRequestException([
+        {
+          field: 'field !!!',
+          message: 'unknown error',
+        },
+      ]);
     }
 
     return comment;

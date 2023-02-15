@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CommentsRepository } from './comments.repository';
 import { Comment } from './dto';
 import { IsNotEmpty, Matches, MaxLength, MinLength } from 'class-validator';
@@ -86,6 +86,12 @@ export class CommentsService {
         },
       };
     } catch (e) {
+      throw new BadRequestException([
+        {
+          field: 'field !!!',
+          message: 'unknown error',
+        },
+      ]);
       return false;
     }
   }
