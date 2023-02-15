@@ -23,15 +23,13 @@ export type UserLikesType = 'commentsLikes' | 'postsLikes';
 
 @Schema({ versionKey: false, timestamps: true })
 export class UserLikes {
-  @Prop({ type: String, required: true, unique: true })
-  id: string;
   @Prop({ type: String, required: true })
   senderId: string;
   @Prop({ type: String, required: true })
   senderLogin: string;
-  @Prop([{ type: Like, default: [] }])
+  @Prop()
   commentsLikes: Like[];
-  @Prop([{ type: Like, default: [] }])
+  @Prop()
   postsLikes: Like[];
 }
 

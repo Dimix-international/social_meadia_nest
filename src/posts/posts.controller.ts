@@ -157,33 +157,19 @@ export class PostsController {
     const post = await this.postsQueryRepository.getPostById(postId);
 
     if (!post) {
-      throw new BadRequestException([
-        {
-          field: 'BRED post',
-          message: 'BRED!! post',
-        },
-      ]);
+      throw new NotFoundException();
     }
 
-    try {
-      return await this.postsService.getCommentsForPost(
-        {
-          postId,
-          pageNumber: transformInNumber(pageNumber, 1),
-          pageSize: transformInNumber(pageSize, 10),
-          sortBy,
-          sortDirection,
-        },
-        userId,
-        'commentsLikes',
-      );
-    } catch (e) {
-      throw new BadRequestException([
-        {
-          field: 'BRED',
-          message: 'BRED!!',
-        },
-      ]);
-    }
+    return await this.postsService.getCommentsForPost(
+      {
+        postId,
+        pageNumber: transformInNumber(pageNumber, 1),
+        pageSize: transformInNumber(pageSize, 10),
+        sortBy,
+        sortDirection,
+      },
+      userId,
+      'commentsLikes',
+    );
   }
 }

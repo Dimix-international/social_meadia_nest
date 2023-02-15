@@ -21,7 +21,6 @@ export class UserLikesRepository {
     const { like, type } = data;
     const { senderId, senderLogin, ...restLike } = like;
     const userLikes = new this.userLikes({
-      id: uuidv4(),
       senderId,
       senderLogin,
       commentsLikes: [],

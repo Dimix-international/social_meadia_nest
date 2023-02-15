@@ -1,7 +1,7 @@
 import { BlogsQueryRepository } from '../blogs/blogs.query-repository';
 import { PostsRepository } from './posts.repository';
 import { PostCreateModel } from '../models/posts/PostsCreateModel';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Post } from './dto';
 import { IsNotEmpty, MaxLength } from 'class-validator';
 import { CommentsQueryRepository } from '../comments/comments.query-repository';
@@ -88,15 +88,6 @@ export class PostsService {
     type: UserLikesType,
   ): Promise<CommentsViewModel> {
     const commentsData = await this.commentsQueryRepository.getComments(data);
-
-    if (!commentsData) {
-      throw new BadRequestException([
-        {
-          field: 'BRED commentsData',
-          message: 'BRED commentsData!!',
-        },
-      ]);
-    }
 
     const { items, ...restCommentsData } = commentsData;
 
