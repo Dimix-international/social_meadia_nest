@@ -20,7 +20,7 @@ export class Comment {
   @Prop({ type: String, required: true })
   content: string;
 
-  @Prop({ type: Date, required: true, default: Date })
+  @Prop({ type: Date, default: new Date() })
   createdAt: Date;
 }
 
