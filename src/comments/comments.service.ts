@@ -129,19 +129,34 @@ export class CommentsService {
       senderId: userId,
     });
 
-    try {
-      if (userLiked) {
-        const likeElementIndex = userLiked.commentsLikes.findIndex(
-          (item) => item.documentId === commentId,
-        );
-        userLiked.commentsLikes[likeElementIndex].likeStatus = likeStatus;
-        await userLiked.save();
+    const saveLikeExistedUse = async () => {
+      const likeElementIndex = userLiked.commentsLikes.findIndex(
+        (item) => item.documentId === commentId,
+      );
+
+      if (likeElementIndex !== -1) {
+        userLiked[type][likeElementIndex].likeStatus = likeStatus;
       } else {
         const newLike = new Like({
           documentId: commentId,
           senderId: userId,
           senderLogin: userLogin,
-          likeStatus: likeStatus,
+          likeStatus,
+        });
+        userLiked[type].push(newLike);
+      }
+      await userLiked.save();
+    };
+
+    try {
+      if (userLiked) {
+        await saveLikeExistedUse();
+      } else {
+        const newLike = new Like({
+          documentId: commentId,
+          senderId: userId,
+          senderLogin: userLogin,
+          likeStatus,
         });
         await this.userLikesRepository.createLike({
           like: newLike,

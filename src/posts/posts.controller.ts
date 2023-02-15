@@ -169,6 +169,7 @@ export class PostsController {
         sortDirection,
       },
       userId,
+      'commentsLikes',
     );
   }
 }

@@ -8,6 +8,7 @@ import { CommentsQueryRepository } from '../comments/comments.query-repository';
 import { UserLikesQueryRepository } from '../userLikes/userLikes.query-repository';
 import { CommentsViewModel } from '../models/comments/CommentsViewModel';
 import { LIKE_STATUSES } from '../constants/general/general';
+import { UserLikesType } from '../userLikes/schema/userLike.schema';
 
 export class PostCreateInput {
   @IsNotEmpty({ message: 'This field is required!' })
@@ -84,41 +85,47 @@ export class PostsService {
   async getCommentsForPost(
     data: CommentForPostType,
     userId: string | undefined,
+    type: UserLikesType,
   ): Promise<CommentsViewModel> {
     const commentsData = await this.commentsQueryRepository.getComments(data);
 
     const { items, ...restCommentsData } = commentsData;
 
     const promisesLikesInfo = [];
+    const promisesUserLikesStatuses = [];
 
     items.forEach((item) => {
       promisesLikesInfo.push(
         this.userLikesQueryRepository.getLikesInfo({
           documentId: item.id,
-          type: 'commentsLikes',
+          type,
         }),
       );
       if (userId) {
-        promisesLikesInfo.push(
+        promisesUserLikesStatuses.push(
           this.userLikesQueryRepository.getUserLikeStatus({
             senderId: userId,
             documentId: item.id,
-            type: 'commentsLikes',
+            type,
           }),
         );
       }
     });
 
     const resultLikesInfo = await Promise.all(promisesLikesInfo);
+    const resultUserLikesStatuses = await Promise.all(
+      promisesUserLikesStatuses,
+    );
 
     const getLikes = (itemId) => {
-      const likesInfo = resultLikesInfo.filter((item) => !!item);
-
-      const document = likesInfo.find((item) => item.documentId === itemId);
-
-      const user = userId
-        ? likesInfo.find((item) => item.senderId === userId)
-        : undefined;
+      const document = resultLikesInfo.find(
+        (item) => item.documentId === itemId,
+      );
+      const existedLikes = resultUserLikesStatuses.filter((item) => !!item);
+      const user =
+        userId && existedLikes.length
+          ? existedLikes.find((item) => item.senderId === userId)
+          : undefined;
 
       const getStatusLike = () => {
         if (!user) return LIKE_STATUSES.NONE;
