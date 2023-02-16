@@ -13,7 +13,7 @@ import { LIKE_STATUSES } from '../constants/general/general';
 import { CommentViewModelType } from '../models/comments/CommentsViewModel';
 import { UserLikesRepository } from '../userLikes/userLikes.repository';
 import { Like } from '../userLikes/dto';
-import { log } from 'util';
+import { UserLikesService } from '../userLikes/userLikes.service';
 
 export class CommentCreateInput {
   @IsNotEmpty({ message: 'This field is required!' })
@@ -36,6 +36,7 @@ export class CommentsService {
     @InjectModel(UserLikes.name)
     private readonly userLikes: Model<UserLikesDocument>,
     protected userLikesRepository: UserLikesRepository,
+    protected userLikesService: UserLikesService,
   ) {}
 
   async createComment(
@@ -45,31 +46,15 @@ export class CommentsService {
     postId: string,
   ): Promise<CommentViewModelType | boolean> {
     const newComment = new Comment(content, userId, userLogin, postId);
-    const newLike = new Like({
-      documentId: newComment.id,
-      senderId: userId,
-      senderLogin: userLogin,
-      likeStatus: LIKE_STATUSES.NONE,
-    });
-    const userLike = await this.userLikes.findOne({
-      senderId: userId,
-    });
-
-    const updateCreateLike = async () => {
-      if (userLike) {
-        userLike.commentsLikes.push(newLike);
-        userLike.save();
-        return;
-      }
-      return this.userLikesRepository.createLike({
-        like: newLike,
-        type: 'commentsLikes',
-      });
-    };
 
     try {
       await Promise.all([
-        updateCreateLike(),
+        this.userLikesService.createLikeDocument({
+          type: 'commentsLikes',
+          senderLogin: userLogin,
+          senderId: userId,
+          documentId: newComment.id,
+        }),
         this.commentsRepository.createCommentForPost(newComment),
       ]);
       return {
@@ -87,12 +72,6 @@ export class CommentsService {
         },
       };
     } catch (e) {
-      throw new BadRequestException([
-        {
-          field: 'field !!!',
-          message: e.message,
-        },
-      ]);
       return false;
     }
   }
@@ -123,61 +102,5 @@ export class CommentsService {
       { content },
     );
     return !!matchedCount;
-  }
-
-  async updateLikeDocument(
-    commentId: string,
-    likeStatus: LIKE_STATUSES,
-    userId: string,
-    userLogin: string,
-    type: UserLikesType,
-  ): Promise<boolean> {
-    const userLiked = await this.userLikes.findOne({
-      senderId: userId,
-    });
-
-    console.log('userLiked', userLiked);
-
-    const saveLikeExistedUse = async () => {
-      const likeElementIndex = userLiked[type].findIndex(
-        (item) => item.documentId === commentId,
-      );
-
-      console.log('likeElementIndex', likeElementIndex);
-
-      if (likeElementIndex !== -1) {
-        userLiked[type][likeElementIndex].likeStatus = likeStatus;
-        await userLiked.save();
-      } else {
-        const newLike = new Like({
-          documentId: commentId,
-          senderId: userId,
-          senderLogin: userLogin,
-          likeStatus,
-        });
-        userLiked[type].push(newLike);
-        await userLiked.save();
-      }
-    };
-
-    try {
-      if (userLiked) {
-        await saveLikeExistedUse();
-      } else {
-        const newLike = new Like({
-          documentId: commentId,
-          senderId: userId,
-          senderLogin: userLogin,
-          likeStatus,
-        });
-        await this.userLikesRepository.createLike({
-          like: newLike,
-          type,
-        });
-      }
-      return true;
-    } catch (e) {
-      return false;
-    }
   }
 }

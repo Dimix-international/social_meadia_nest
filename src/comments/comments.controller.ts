@@ -25,6 +25,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { CommentViewModelType } from '../models/comments/CommentsViewModel';
 import { UserLikesQueryRepository } from '../userLikes/userLikes.query-repository';
 import { AuthInfoUserGuard } from '../guards/auth-info-user.guard';
+import { UserLikesService } from '../userLikes/userLikes.service';
 
 @SkipThrottle()
 @Controller('comments')
@@ -34,6 +35,7 @@ export class CommentsController {
     protected commentsQueryRepository: CommentsQueryRepository,
     protected commentsService: CommentsService,
     protected userLikesQueryRepository: UserLikesQueryRepository,
+    protected userLikesService: UserLikesService,
   ) {}
 
   @UseGuards(AuthInfoUserGuard)
@@ -181,12 +183,12 @@ export class CommentsController {
       throw new NotFoundException();
     }
 
-    return await this.commentsService.updateLikeDocument(
-      comment.id,
-      data.likeStatus,
-      userId,
-      user.login,
-      'commentsLikes',
-    );
+    return await this.userLikesService.updateLikeDocument({
+      type: 'commentsLikes',
+      likeStatus: data.likeStatus,
+      senderLogin: user.login,
+      senderId: userId,
+      documentId: comment.id,
+    });
   }
 }
